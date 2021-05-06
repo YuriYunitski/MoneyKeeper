@@ -31,6 +31,11 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -50,7 +55,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DBHelper dbHelper;
     ElementAdapter adapter;
     SharedPreferences sharedPreferences;
+
+    private Thread secThread;
+    private Runnable runnable;
+    private String dollar, euro, belRub, pound;
     int res;
+
+    Document doc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(this);
         dbHelper = new DBHelper(this);
+        init();
     }
 
     @Override
@@ -100,10 +112,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.exchange){
-            startActivity(new Intent(this, Exchange.class));
+            Intent intent = new Intent(this, Exchange.class);
+            intent.putExtra("dol", dollar);
+            intent.putExtra("eur", euro);
+            intent.putExtra("belr", belRub);
+            intent.putExtra("pon", pound);
+            startActivity(intent);
+        } else if (id == R.id.settings){
+
+            startActivity(new Intent(this, Settings.class));
         } else if (id == R.id.statistic){
 
-            Toast.makeText(this, "item2", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, Statistic.class));
         }
 
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -115,6 +135,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onClick(View v) {
         launchDialogAdd();
         updateUI();
+    }
+
+    private void init(){
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                getWeb();
+            }
+        };
+        secThread = new Thread(runnable);
+        secThread.start();
+    }
+
+    private void getWeb(){
+        try {
+            doc = Jsoup.connect("https://www.cbr.ru/currency_base/daily/").get();
+
+            Elements elements = doc.getElementsByTag("tbody");
+            org.jsoup.nodes.Element element = elements.get(0);
+            Elements elementsFromTable = element.children();
+            String s = elementsFromTable.get(11).toString();
+            String[] st = s.split("<td>");
+            String[] name = st[4].split("<");
+            String[] value = st[5].split("<");
+            String s2 = elementsFromTable.get(12).toString();
+            String[] st2 = s2.split("<td>");
+            String[] name2 = st2[4].split("<");
+            String[] value2 = st2[5].split("<");
+            String s3 = elementsFromTable.get(4).toString();
+            String[] st3 = s3.split("<td>");
+            String[] name3 = st3[4].split("<");
+            String[] value3 = st3[5].split("<");
+            String s4 = elementsFromTable.get(29).toString();
+            String[] st4 = s4.split("<td>");
+            String[] name4 = st4[4].split("<");
+            String[] value4 = st4[5].split("<");
+            dollar = name[0] + " : " + value[0] + getString(R.string.ruble);
+            euro = name2[0]  + " : " + value2[0] + "₽";
+            belRub = name3[0] + " : " + value3[0] + "₽";
+            pound = name4[0] + " : " + value4[0] + "₽";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void launchDialogAdd(){
@@ -213,13 +276,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void saveBalance(){
-        sharedPreferences = getPreferences(MODE_PRIVATE);
+        String fileName = "balanceSP";
+        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("b", balance.getText().toString());
         editor.apply();
     }
     void loadBalance(){
-        sharedPreferences = getPreferences(MODE_PRIVATE);
+        String fileName = "balanceSP";
+        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
         String bb =sharedPreferences.getString("b", "0");
         balance.setText(bb);
     }
