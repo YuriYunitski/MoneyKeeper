@@ -17,6 +17,8 @@ public class Statistic extends AppCompatActivity {
 
     Toolbar toolbar;
     DBHelper dbHelper;
+    DBHelper1 dbHelper1;
+    DBHelper2 dbHelper2;
 
     SharedPreferences sharedPreferences;
 
@@ -46,80 +48,233 @@ public class Statistic extends AppCompatActivity {
         operation = new ArrayList<>();
         val = new ArrayList<>();
         dbHelper = new DBHelper(this);
+        dbHelper1 = new DBHelper1(this);
+        dbHelper2 = new DBHelper2(this);
         showStat();
     }
-    private void showStat(){
-        database = dbHelper.getWritableDatabase();
-        String income = "SELECT value FROM " + InputData.TaskEntry.TABLE + " WHERE operation = '2131165295';";
-        Cursor c = database.rawQuery(income, null);
-        int in = 0;
-        int out = 0;
-        String ssss = "0";
-        if (!(c.getCount() <= 0)) {
-            if (c.moveToFirst()) {
-                do {
-                    totalIncome.add(c.getString(0));
-                } while (c.moveToNext());
-            }
-            String outcome = "SELECT value FROM " + InputData.TaskEntry.TABLE + " WHERE operation = '2131165294';";
-            c = database.rawQuery(outcome, null);
-            if (c.moveToFirst()) {
-                do {
-                    totalOutcome.add(c.getString(0));
-                } while (c.moveToNext());
-            }
-            c.close();
-            database.close();
+    private void showStat() {
+        String f = "accFile";
+        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString("acc", "Счёт 1");
+        if (curAc.equals("Счёт 1")) {
+            database = dbHelper.getWritableDatabase();
+            String income = "SELECT value FROM " + InputData.TaskEntry.TABLE + " WHERE operation = '2131165295';";
+            Cursor c = database.rawQuery(income, null);
+            int in = 0;
+            int out = 0;
+            String ssss = "0";
+            if (!(c.getCount() <= 0)) {
+                if (c.moveToFirst()) {
+                    do {
+                        totalIncome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                String outcome = "SELECT value FROM " + InputData.TaskEntry.TABLE + " WHERE operation = '2131165294';";
+                c = database.rawQuery(outcome, null);
+                if (c.moveToFirst()) {
+                    do {
+                        totalOutcome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                c.close();
+                database.close();
 
-            for (int i = 0; i < totalIncome.size(); i++) {
-                in += Integer.parseInt(totalIncome.get(i));
-            }
-            for (int i = 0; i < totalOutcome.size(); i++) {
-                out += Integer.parseInt(totalOutcome.get(i));
-            }
-            double percent = (double) out / in * 100;
-            String ss = "" + percent;
-            char[] sss = ss.toCharArray();
-            if (percent < 100) {
-                if (sss.length > 4) {
-                    ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4];
+                for (int i = 0; i < totalIncome.size(); i++) {
+                    in += Integer.parseInt(totalIncome.get(i));
+                }
+                for (int i = 0; i < totalOutcome.size(); i++) {
+                    out += Integer.parseInt(totalOutcome.get(i));
+                }
+                double percent = (double) out / in * 100;
+                String ss = "" + percent;
+                char[] sss = ss.toCharArray();
+                if (percent < 100) {
+                    if (sss.length > 4) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
+                } else if (percent >= 100 && percent < 1000) {
+                    if (sss.length > 5) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4] + sss[5];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
                 } else {
                     ssss = "";
                     for (char value : sss) {
                         ssss += value;
                     }
                 }
-            } else if (percent >= 100 && percent < 1000){
-                if (sss.length > 5) {
-                ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4] + sss[5];
-            } else {
-                ssss = "";
+            }
+            String file = "myFile";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            String c1 = "";
+            if (cc.equals("rub")) {
+                c1 = getString(R.string.ruble);
+            } else if (cc.equals("euro")) {
+                c1 = getString(R.string.euro);
+            } else if (cc.equals("dollar")) {
+                c1 = getString(R.string.dollar);
+            }
+
+
+            totInc.setText("Общий доход: " + in + c1);
+            totOutc.setText("Общий расход: " + out + c1);
+            perc.setText("Процент расхода от дохода: " + ssss + "%");
+        } else if (curAc.equals("Счёт 2")){
+            database = dbHelper1.getWritableDatabase();
+            String income = "SELECT value1 FROM " + InputData1.TaskEntry1.TABLE1 + " WHERE operation1 = '2131165295';";
+            Cursor c = database.rawQuery(income, null);
+            int in = 0;
+            int out = 0;
+            String ssss = "0";
+            if (!(c.getCount() <= 0)) {
+                if (c.moveToFirst()) {
+                    do {
+                        totalIncome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                String outcome = "SELECT value1 FROM " + InputData1.TaskEntry1.TABLE1 + " WHERE operation1 = '2131165294';";
+                c = database.rawQuery(outcome, null);
+                if (c.moveToFirst()) {
+                    do {
+                        totalOutcome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                c.close();
+                database.close();
+
+                for (int i = 0; i < totalIncome.size(); i++) {
+                    in += Integer.parseInt(totalIncome.get(i));
+                }
+                for (int i = 0; i < totalOutcome.size(); i++) {
+                    out += Integer.parseInt(totalOutcome.get(i));
+                }
+                double percent = (double) out / in * 100;
+                String ss = "" + percent;
+                char[] sss = ss.toCharArray();
+                if (percent < 100) {
+                    if (sss.length > 4) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
+                } else if (percent >= 100 && percent < 1000) {
+                    if (sss.length > 5) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4] + sss[5];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
+                } else {
+                    ssss = "";
                     for (char value : sss) {
                         ssss += value;
                     }
-            }
-            } else {
-                ssss = "";
-                for (char value : sss) {
-                    ssss += value;
                 }
             }
-        }
-        String file = "myFile";
-        sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-        String cc = sharedPreferences.getString("currency", "rub");
-        String c1 = "";
-        if (cc.equals("rub")){
-            c1 = getString(R.string.ruble);
-        } else if (cc.equals("euro")){
-            c1 = getString(R.string.euro);
-        } else if (cc.equals("dollar")){
-            c1 = getString(R.string.dollar);
-        }
+            String file = "myFile1";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            String c1 = "";
+            if (cc.equals("rub")) {
+                c1 = getString(R.string.ruble);
+            } else if (cc.equals("euro")) {
+                c1 = getString(R.string.euro);
+            } else if (cc.equals("dollar")) {
+                c1 = getString(R.string.dollar);
+            }
 
 
-        totInc.setText("Общий доход: " + in + c1);
-        totOutc.setText("Общий расход: " + out + c1);
-        perc.setText("Процент расхода от дохода: " + ssss + "%");
+            totInc.setText("Общий доход: " + in + c1);
+            totOutc.setText("Общий расход: " + out + c1);
+            perc.setText("Процент расхода от дохода: " + ssss + "%");
+        } else if (curAc.equals("Счёт 3")){
+            database = dbHelper2.getWritableDatabase();
+            String income = "SELECT value2 FROM " + InputData2.TaskEntry2.TABLE2 + " WHERE operation2 = '2131165295';";
+            Cursor c = database.rawQuery(income, null);
+            int in = 0;
+            int out = 0;
+            String ssss = "0";
+            if (!(c.getCount() <= 0)) {
+                if (c.moveToFirst()) {
+                    do {
+                        totalIncome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                String outcome = "SELECT value2 FROM " + InputData2.TaskEntry2.TABLE2 + " WHERE operation2 = '2131165294';";
+                c = database.rawQuery(outcome, null);
+                if (c.moveToFirst()) {
+                    do {
+                        totalOutcome.add(c.getString(0));
+                    } while (c.moveToNext());
+                }
+                c.close();
+                database.close();
+
+                for (int i = 0; i < totalIncome.size(); i++) {
+                    in += Integer.parseInt(totalIncome.get(i));
+                }
+                for (int i = 0; i < totalOutcome.size(); i++) {
+                    out += Integer.parseInt(totalOutcome.get(i));
+                }
+                double percent = (double) out / in * 100;
+                String ss = "" + percent;
+                char[] sss = ss.toCharArray();
+                if (percent < 100) {
+                    if (sss.length > 4) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
+                } else if (percent >= 100 && percent < 1000) {
+                    if (sss.length > 5) {
+                        ssss = "" + sss[0] + sss[1] + sss[2] + sss[3] + sss[4] + sss[5];
+                    } else {
+                        ssss = "";
+                        for (char value : sss) {
+                            ssss += value;
+                        }
+                    }
+                } else {
+                    ssss = "";
+                    for (char value : sss) {
+                        ssss += value;
+                    }
+                }
+            }
+            String file = "myFile2";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            String c1 = "";
+            if (cc.equals("rub")) {
+                c1 = getString(R.string.ruble);
+            } else if (cc.equals("euro")) {
+                c1 = getString(R.string.euro);
+            } else if (cc.equals("dollar")) {
+                c1 = getString(R.string.dollar);
+            }
+
+
+            totInc.setText("Общий доход: " + in + c1);
+            totOutc.setText("Общий расход: " + out + c1);
+            perc.setText("Процент расхода от дохода: " + ssss + "%");
+        }
     }
 }

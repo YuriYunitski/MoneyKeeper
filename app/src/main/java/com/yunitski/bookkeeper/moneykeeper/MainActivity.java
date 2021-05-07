@@ -22,9 +22,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,13 +56,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     RadioButton radioButtonOut, radioButtonIn;
     RadioGroup radioGroup;
     DBHelper dbHelper;
+    DBHelper1 dbHelper1;
+    DBHelper2 dbHelper2;
     ElementAdapter adapter;
     SharedPreferences sharedPreferences;
-
+    Spinner spinner;
+    ArrayAdapter<String> spinnerAdapter;
     private Thread secThread;
     private Runnable runnable;
-    private String dollar, euro, belRub, pound;
+    private String dollar, euro, belRub, pound, currentAccount;
     int res;
+    final String[] names = new String[] {"Счёт 1", "Счёт 2", "Счёт 3"};
 
     Document doc;
 
@@ -83,29 +90,174 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         currency = findViewById(R.id.curremcy);
         fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(this);
+        spinner = findViewById(R.id.spinner);
+        spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, names);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String fileName = "accFile";
+                sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                switch (position){
+                    case 0:
+                        currentAccount = names[0];
+                        editor.putString("acc", currentAccount);
+                        editor.apply();
+                        updateUI();
+                        loadBalance();
+                        updBalCur();
+                        break;
+                    case 1:
+                        currentAccount = names[1];
+                        editor.putString("acc", currentAccount);
+                        editor.apply();
+                        updateUI();
+                        loadBalance();
+                        updBalCur();
+                        break;
+                    case 2:
+                        currentAccount = names[2];
+                        editor.putString("acc", currentAccount);
+                        editor.apply();
+                        updateUI();
+                        loadBalance();
+                        updBalCur();
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         dbHelper = new DBHelper(this);
+        dbHelper1 = new DBHelper1(this);
+        dbHelper2 = new DBHelper2(this);
         init();
+        updateAccount();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        String file = "myFile";
-        sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-        String cc = sharedPreferences.getString("currency", "rub");
-        switch (cc) {
-            case "dollar":
-                currency.setText("" + getString(R.string.dollar));
-                break;
-            case "rub":
-                currency.setText("" + getString(R.string.ruble));
-                break;
-            case "euro":
-                currency.setText("" + getString(R.string.euro));
-                break;
+
+        String f = "accFile";
+        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString("acc", names[0]);
+        if (curAc.equals(names[0])) {
+            String file = "myFile";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
+        } else if (curAc.equals(names[1])) {
+            String file = "myFile1";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
+        }  else if (curAc.equals(names[2])) {
+            String file = "myFile2";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
         }
         loadBalance();
         updateUI();
+    }
+
+    void updBalCur(){
+        String f = "accFile";
+        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString("acc", names[0]);
+        if (curAc.equals(names[0])) {
+            String file = "myFile";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
+        } else if (curAc.equals(names[1])) {
+            String file = "myFile1";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
+        }  else if (curAc.equals(names[2])) {
+            String file = "myFile2";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "dollar":
+                    currency.setText("" + getString(R.string.dollar));
+                    break;
+                case "rub":
+                    currency.setText("" + getString(R.string.ruble));
+                    break;
+                case "euro":
+                    currency.setText("" + getString(R.string.euro));
+                    break;
+            }
+        }
+        loadBalance();
+        updateUI();
+    }
+
+    void updateAccount(){
+
+        String fileName = "accFile";
+        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        String mPos = sharedPreferences.getString("acc", names[0]);
+
+        int spPos = spinnerAdapter.getPosition(mPos);
+        spinner.setSelection(spPos);
     }
 
     @Override
@@ -211,46 +363,131 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (income){
-                    if (!inpValueET.getText().toString().isEmpty()) {
-                        res = R.drawable.ic_baseline_arrow_drop_up_24;
-                        int i = Integer.parseInt(inpValueET.getText().toString());
-                        int bal = Integer.parseInt(balance.getText().toString());
-                        int k = bal + i;
-                        balance.setText("" + k);
-                        ContentValues cv = new ContentValues();
-                        SQLiteDatabase db = dbHelper.getWritableDatabase();
-                        cv.put(InputData.TaskEntry.VALUE, i);
-                        cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
-                        cv.put(InputData.TaskEntry.DATE, dateC());
-                        cv.put(InputData.TaskEntry.OPERATION, res);
-                        db.insert(InputData.TaskEntry.TABLE, null, cv);
-                        db.close();
-                        saveBalance();
-                        updateUI();
-                    }
-                } else if(outcome){
-                    if (!inpValueET.getText().toString().isEmpty()) {
-                        res = R.drawable.ic_baseline_arrow_drop_down_24;
-                        int i = Integer.parseInt(inpValueET.getText().toString());
-                        int bal = Integer.parseInt(balance.getText().toString());
-                        int k = bal - i;
-                        balance.setText("" + k);
-                        ContentValues cv = new ContentValues();
-                        SQLiteDatabase db = dbHelper.getWritableDatabase();
-                        cv.put(InputData.TaskEntry.VALUE, i);
-                        cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
-                        cv.put(InputData.TaskEntry.DATE, dateC());
-                        cv.put(InputData.TaskEntry.OPERATION, res);
-                        db.insert(InputData.TaskEntry.TABLE, null, cv);
-                        db.close();
-                        saveBalance();
-                        updateUI();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
-                }
+                String fileName = "accFile";
+                sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                currentAccount = sharedPreferences.getString("acc", names[0]);
 
+                if (currentAccount.equals(names[0])) {
+                    if (income) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_up_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal + i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper.getWritableDatabase();
+                            cv.put(InputData.TaskEntry.VALUE, i);
+                            cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
+                            cv.put(InputData.TaskEntry.DATE, dateC());
+                            cv.put(InputData.TaskEntry.OPERATION, res);
+                            db.insert(InputData.TaskEntry.TABLE, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else if (outcome) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_down_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal - i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper.getWritableDatabase();
+                            cv.put(InputData.TaskEntry.VALUE, i);
+                            cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
+                            cv.put(InputData.TaskEntry.DATE, dateC());
+                            cv.put(InputData.TaskEntry.OPERATION, res);
+                            db.insert(InputData.TaskEntry.TABLE, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                    }
+                } else if (currentAccount.equals(names[1])){
+                    if (income) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_up_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal + i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper1.getWritableDatabase();
+                            cv.put(InputData1.TaskEntry1.VALUE1, i);
+                            cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
+                            cv.put(InputData1.TaskEntry1.DATE1, dateC());
+                            cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                            db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else if (outcome) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_down_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal - i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper1.getWritableDatabase();
+                            cv.put(InputData1.TaskEntry1.VALUE1, i);
+                            cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
+                            cv.put(InputData1.TaskEntry1.DATE1, dateC());
+                            cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                            db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                    }
+                } else if (currentAccount.equals(names[2])){
+                    if (income) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_up_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal + i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper2.getWritableDatabase();
+                            cv.put(InputData2.TaskEntry2.VALUE2, i);
+                            cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
+                            cv.put(InputData2.TaskEntry2.DATE2, dateC());
+                            cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                            db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else if (outcome) {
+                        if (!inpValueET.getText().toString().isEmpty()) {
+                            res = R.drawable.ic_baseline_arrow_drop_down_24;
+                            int i = Integer.parseInt(inpValueET.getText().toString());
+                            int bal = Integer.parseInt(balance.getText().toString());
+                            int k = bal - i;
+                            balance.setText("" + k);
+                            ContentValues cv = new ContentValues();
+                            SQLiteDatabase db = dbHelper2.getWritableDatabase();
+                            cv.put(InputData2.TaskEntry2.VALUE2, i);
+                            cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
+                            cv.put(InputData2.TaskEntry2.DATE2, dateC());
+                            cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                            db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
+                            db.close();
+                            saveBalance();
+                            updateUI();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
         updateUI();
@@ -276,55 +513,186 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void saveBalance(){
-        String fileName = "balanceSP";
+        String fileName = "accFile";
         sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("b", balance.getText().toString());
-        editor.apply();
+        currentAccount = sharedPreferences.getString("acc", names[0]);
+
+        if (currentAccount.equals(names[0])) {
+            String fileNameB = "balanceSP";
+            sharedPreferences = getSharedPreferences(fileNameB, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("b", balance.getText().toString());
+            editor.apply();
+        } else if (currentAccount.equals(names[1])){
+            String fileNameB1 = "balanceSP1";
+            sharedPreferences = getSharedPreferences(fileNameB1, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("b1", balance.getText().toString());
+            editor.apply();
+
+        } else if (currentAccount.equals(names[2])){
+
+            String fileNameB2 = "balanceSP2";
+            sharedPreferences = getSharedPreferences(fileNameB2, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("b2", balance.getText().toString());
+            editor.apply();
+        }
     }
     void loadBalance(){
-        String fileName = "balanceSP";
+
+        String fileName = "accFile";
         sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        String bb =sharedPreferences.getString("b", "0");
-        balance.setText(bb);
+        currentAccount = sharedPreferences.getString("acc", names[0]);
+
+        if (currentAccount.equals(names[0])) {
+            String fileNameB = "balanceSP";
+            sharedPreferences = getSharedPreferences(fileNameB, Context.MODE_PRIVATE);
+            String bb = sharedPreferences.getString("b", "0");
+            balance.setText(bb);
+        } else if (currentAccount.equals(names[1])){
+
+            String fileNameB1 = "balanceSP1";
+            sharedPreferences = getSharedPreferences(fileNameB1, Context.MODE_PRIVATE);
+            String bb =sharedPreferences.getString("b1", "0");
+            balance.setText(bb);
+        } else if (currentAccount.equals(names[2])){
+            String fileNameB2 = "balanceSP2";
+            sharedPreferences = getSharedPreferences(fileNameB2, Context.MODE_PRIVATE);
+            String bb =sharedPreferences.getString("b2", "0");
+            balance.setText(bb);
+        }
     }
 
-    void updateUI(){
 
-        String file = "myFile";
-        sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-        String cc = sharedPreferences.getString("currency", "rub");
+
+    void updateUI() {
+
+
+        String f = "accFile";
+        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
+        String cu = sharedPreferences.getString("acc", names[0]);
         String c = "";
-        switch (cc) {
-            case "rub":
-                c = getString(R.string.ruble);
-                break;
-            case "euro":
-                c = getString(R.string.euro);
-                break;
-            case "dollar":
-                c = getString(R.string.dollar);
-                break;
+        if (cu.equals(names[0])){
+            String file = "myFile";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "rub":
+                    c = getString(R.string.ruble);
+                    break;
+                case "euro":
+                    c = getString(R.string.euro);
+                    break;
+                case "dollar":
+                    c = getString(R.string.dollar);
+                    break;
+            }
+        } else if (cu.equals(names[1])){
+            String file = "myFile1";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "rub":
+                    c = getString(R.string.ruble);
+                    break;
+                case "euro":
+                    c = getString(R.string.euro);
+                    break;
+                case "dollar":
+                    c = getString(R.string.dollar);
+                    break;
+            }
+        } else if (cu.equals(names[2])){
+            String file = "myFile2";
+            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString("currency", "rub");
+            switch (cc) {
+                case "rub":
+                    c = getString(R.string.ruble);
+                    break;
+                case "euro":
+                    c = getString(R.string.euro);
+                    break;
+                case "dollar":
+                    c = getString(R.string.dollar);
+                    break;
+            }
         }
-        elements = new ArrayList<Element>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION}, null, null, null, null, null);
-        while (cursor.moveToNext()) {
-            int idx = cursor.getColumnIndex(InputData.TaskEntry.DATE);
-            int idx1 = cursor.getColumnIndex(InputData.TaskEntry.TOTAL_VALUE);
-            int idx2 = cursor.getColumnIndex(InputData.TaskEntry.VALUE);
-            int idx3 = cursor.getColumnIndex(InputData.TaskEntry.OPERATION);
-            elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1),  "" + cursor.getString(idx), cursor.getInt(idx3), ""+c ));
+
+
+
+
+        String fileName = "accFile";
+        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        currentAccount = sharedPreferences.getString("acc", names[0]);
+
+        if (currentAccount.equals(names[0])) {
+
+            elements = new ArrayList<Element>();
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION}, null, null, null, null, null);
+            while (cursor.moveToNext()) {
+                int idx = cursor.getColumnIndex(InputData.TaskEntry.DATE);
+                int idx1 = cursor.getColumnIndex(InputData.TaskEntry.TOTAL_VALUE);
+                int idx2 = cursor.getColumnIndex(InputData.TaskEntry.VALUE);
+                int idx3 = cursor.getColumnIndex(InputData.TaskEntry.OPERATION);
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+            }
+            if (adapter == null) {
+                adapter = new ElementAdapter(getLayoutInflater(), elements);
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.clear();
+                adapter.addAll(elements);
+                adapter.notifyDataSetChanged();
+            }
+            cursor.close();
+            db.close();
+        } else if (currentAccount.equals(names[1])){
+            elements = new ArrayList<Element>();
+            SQLiteDatabase db = dbHelper1.getReadableDatabase();
+            Cursor cursor = db.query(InputData1.TaskEntry1.TABLE1, new String[]{InputData1.TaskEntry1._ID, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.TOTAL_VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1}, null, null, null, null, null);
+            while (cursor.moveToNext()) {
+                int idx = cursor.getColumnIndex(InputData1.TaskEntry1.DATE1);
+                int idx1 = cursor.getColumnIndex(InputData1.TaskEntry1.TOTAL_VALUE1);
+                int idx2 = cursor.getColumnIndex(InputData1.TaskEntry1.VALUE1);
+                int idx3 = cursor.getColumnIndex(InputData1.TaskEntry1.OPERATION1);
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+            }
+            if (adapter == null) {
+                adapter = new ElementAdapter(getLayoutInflater(), elements);
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.clear();
+                adapter.addAll(elements);
+                adapter.notifyDataSetChanged();
+            }
+            cursor.close();
+            db.close();
+
+        } else if (currentAccount.equals(names[2])){
+            elements = new ArrayList<Element>();
+            SQLiteDatabase db = dbHelper2.getReadableDatabase();
+            Cursor cursor = db.query(InputData2.TaskEntry2.TABLE2, new String[]{InputData2.TaskEntry2._ID, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.TOTAL_VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2}, null, null, null, null, null);
+            while (cursor.moveToNext()) {
+                int idx = cursor.getColumnIndex(InputData2.TaskEntry2.DATE2);
+                int idx1 = cursor.getColumnIndex(InputData2.TaskEntry2.TOTAL_VALUE2);
+                int idx2 = cursor.getColumnIndex(InputData2.TaskEntry2.VALUE2);
+                int idx3 = cursor.getColumnIndex(InputData2.TaskEntry2.OPERATION2);
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+            }
+            if (adapter == null) {
+                adapter = new ElementAdapter(getLayoutInflater(), elements);
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.clear();
+                adapter.addAll(elements);
+                adapter.notifyDataSetChanged();
+            }
+            cursor.close();
+            db.close();
+
         }
-        if (adapter == null) {
-            adapter = new ElementAdapter(getLayoutInflater(), elements);
-            recyclerView.setAdapter(adapter);
-        } else {
-            adapter.clear();
-            adapter.addAll(elements);
-            adapter.notifyDataSetChanged();
-        }
-        cursor.close();
-        db.close();
     }
 }
