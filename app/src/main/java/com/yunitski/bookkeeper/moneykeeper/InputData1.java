@@ -17,5 +17,7 @@ public class InputData1 {
         public static final String VALUE1 = "value1";
 
         public static final String OPERATION1 = "operation1";
+
+        public static final String CATEGORY1 = "category1";
     }
 }

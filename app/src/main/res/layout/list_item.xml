@@ -40,7 +40,7 @@
         android:id="@+id/tv_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:text="TextView"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -59,22 +59,13 @@
         app:layout_constraintStart_toStartOf="@+id/tv_value"
         app:layout_constraintTop_toBottomOf="@+id/tv_value" />
 
-    <View
-        android:id="@+id/divider6"
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="1dp"
-        android:background="#989898"
-        app:layout_constraintBottom_toTopOf="@+id/tv_date"
-        app:layout_constraintEnd_toEndOf="@+id/tv_total_value"
-        app:layout_constraintStart_toStartOf="@+id/tv_total_value"
-        app:layout_constraintTop_toBottomOf="@+id/tv_total_value" />
+
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_2sdp"
         android:text="Сумма"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/tv_value"
@@ -85,7 +76,7 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="1dp"
+        android:layout_marginBottom="@dimen/_2sdp"
         android:text="Баланс"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/tv_total_value"
@@ -102,6 +93,16 @@
         app:layout_constraintBottom_toBottomOf="@+id/tv_date"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tv_date" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Категория"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_category"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_category" />
 
     <TextView
         android:id="@+id/sum_cur"
@@ -135,6 +136,36 @@
         app:layout_constraintTop_toTopOf="@+id/tv_total_value"
         app:srcCompat="@drawable/ic_baseline_arrow_drop_up_24"
         tools:ignore="VectorDrawableCompat" />
+
+    <View
+        android:id="@+id/divider9"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#989898"
+        app:layout_constraintEnd_toEndOf="@+id/tv_date"
+        app:layout_constraintStart_toStartOf="@+id/tv_date"
+        app:layout_constraintTop_toBottomOf="@+id/tv_date" />
+
+    <TextView
+        android:id="@+id/tv_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="TextView"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_date" />
+
+    <View
+        android:id="@+id/divider6"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="22dp"
+        android:background="#989898"
+        app:layout_constraintEnd_toEndOf="@+id/tv_total_value"
+        app:layout_constraintStart_toStartOf="@+id/tv_total_value"
+        app:layout_constraintTop_toTopOf="@+id/tv_total_value" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

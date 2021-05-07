@@ -41,6 +41,7 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
         holder.imageView.setImageResource(element.getOperation());
         holder.sumCur.setText(element.getCurrency());
         holder.balCur.setText(element.getCurrency());
+        holder.categ.setText(element.getCategory());
     }
 
     @Override
@@ -64,7 +65,7 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView valueView, totalValueView, dateView, sumCur, balCur;
+        final TextView valueView, totalValueView, dateView, sumCur, balCur, categ;
         final ImageView imageView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -74,6 +75,7 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
             imageView = itemView.findViewById(R.id.imageView);
             sumCur = itemView.findViewById(R.id.sum_cur);
             balCur = itemView.findViewById(R.id.bal_cur);
+            categ = itemView.findViewById(R.id.tv_category);
         }
     }
 }

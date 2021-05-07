@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     int res;
     final String[] names = new String[] {"Счёт 1", "Счёт 2", "Счёт 3"};
 
+    String spinIn;
+    String spinOut;
     Document doc;
 
     @Override
@@ -95,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         currency = findViewById(R.id.curremcy);
         fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(this);
+        spinIn = "";
+        spinOut = "";
         spinner = findViewById(R.id.spinner);
         spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, names);
         spinner.setAdapter(spinnerAdapter);
@@ -337,50 +341,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void getSpinIn(Spinner spinner){
-
-        CategoryIncome categoryIncome = new CategoryIncome(this);
-        inList = new ArrayList<>();
-        SQLiteDatabase database = categoryIncome.getReadableDatabase();
-        Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
-        while (cursor.moveToNext()){
-            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
-            int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
-            inList.add(cursor.getString(idxC));
-        }
-        if (spinnerInAdapter == null){
-            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, inList);
-            spinner.setAdapter(spinnerInAdapter);
-        } else {
-            spinnerInAdapter.clear();
-            spinnerInAdapter.addAll(inList);
-            spinnerInAdapter.notifyDataSetChanged();
-        }
-        cursor.close();
-        database.close();
-    }
-
-    public void getSpinOut(Spinner spinner){
-        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
-        outList = new ArrayList<>();
-        SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
-        Cursor cursor = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
-        while (cursor.moveToNext()){
-            int idx = cursor.getColumnIndex(CategoryOutcome.CatEntry._ID);
-            int idxC = cursor.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
-            outList.add(cursor.getString(idxC));
-        }
-        if (spinnerOutAdapter == null){
-            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, outList);
-            spinner.setAdapter(spinnerOutAdapter);
-        } else {
-            spinnerOutAdapter.clear();
-            spinnerOutAdapter.addAll(outList);
-            spinnerOutAdapter.notifyDataSetChanged();
-        }
-        cursor.close();
-        database1.close();
-    }
+//    public void getSpinIn(Spinner spinner){
+//
+//        CategoryIncome categoryIncome = new CategoryIncome(this);
+//        inList = new ArrayList<>();
+//        SQLiteDatabase database = categoryIncome.getReadableDatabase();
+//        Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
+//        while (cursor.moveToNext()){
+//            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
+//            int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
+//            inList.add(cursor.getString(idxC));
+//        }
+//        if (spinnerInAdapter == null){
+//            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, inList);
+//            spinner.setAdapter(spinnerInAdapter);
+//        } else {
+//            spinnerInAdapter.clear();
+//            spinnerInAdapter.addAll(inList);
+//            spinnerInAdapter.notifyDataSetChanged();
+//        }
+//        cursor.close();
+//        database.close();
+//    }
+//
+//    public void getSpinOut(Spinner spinner){
+//        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
+//        outList = new ArrayList<>();
+//        SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
+//        Cursor cursor1 = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
+//        while (cursor1.moveToNext()){
+//            int idx = cursor1.getColumnIndex(CategoryOutcome.CatEntry._ID);
+//            int idxC = cursor1.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
+//            outList.add(cursor1.getString(idxC));
+//        }
+//        if (spinnerOutAdapter == null){
+//            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, outList);
+//            spinner.setAdapter(spinnerOutAdapter);
+//        } else {
+//            spinnerOutAdapter.clear();
+//            spinnerOutAdapter.addAll(outList);
+//            spinnerOutAdapter.notifyDataSetChanged();
+//        }
+//        cursor1.close();
+//        database1.close();
+//    }
 
     private void launchDialogAdd(){
         loadBalance();
@@ -399,9 +403,56 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Spinner spinnerIn, spinnerOut;
         spinnerIn = view.findViewById(R.id.spinner_in_cat);
         spinnerOut = view.findViewById(R.id.spinner_out_cat);
+        CategoryIncome categoryIncome = new CategoryIncome(this);
+        inList = new ArrayList<>();
+        SQLiteDatabase database = categoryIncome.getReadableDatabase();
+        Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
+        while (cursor.moveToNext()){
+            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
+            int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
+            inList.add(cursor.getString(idxC));
+        }
+            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_cat, R.id.tv_spin_cat, inList);
+            spinnerIn.setAdapter(spinnerInAdapter);
 
-        getSpinIn(spinnerIn);
-        getSpinOut(spinnerOut);
+        cursor.close();
+        database.close();
+        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
+        outList = new ArrayList<>();
+        SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
+        Cursor cursor1 = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
+        while (cursor1.moveToNext()){
+            int idx = cursor1.getColumnIndex(CategoryOutcome.CatEntry._ID);
+            int idxC = cursor1.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
+            outList.add(cursor1.getString(idxC));
+        }
+            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_cat, R.id.tv_spin_cat, outList);
+            spinnerOut.setAdapter(spinnerOutAdapter);
+
+        cursor1.close();
+        database1.close();
+        spinnerIn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinIn = inList.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        spinnerOut.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinOut = outList.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         radioGroup = view.findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -437,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
                             cv.put(InputData.TaskEntry.DATE, dateC());
                             cv.put(InputData.TaskEntry.OPERATION, res);
+                            cv.put(InputData.TaskEntry.CATEGORY, spinIn);
                             db.insert(InputData.TaskEntry.TABLE, null, cv);
                             db.close();
                             saveBalance();
@@ -455,6 +507,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
                             cv.put(InputData.TaskEntry.DATE, dateC());
                             cv.put(InputData.TaskEntry.OPERATION, res);
+                            cv.put(InputData.TaskEntry.CATEGORY, spinOut);
                             db.insert(InputData.TaskEntry.TABLE, null, cv);
                             db.close();
                             saveBalance();
@@ -477,6 +530,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
                             cv.put(InputData1.TaskEntry1.DATE1, dateC());
                             cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                            cv.put(InputData1.TaskEntry1.CATEGORY1, spinIn);
                             db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
                             db.close();
                             saveBalance();
@@ -495,6 +549,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
                             cv.put(InputData1.TaskEntry1.DATE1, dateC());
                             cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                            cv.put(InputData1.TaskEntry1.CATEGORY1, spinOut);
                             db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
                             db.close();
                             saveBalance();
@@ -517,6 +572,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
                             cv.put(InputData2.TaskEntry2.DATE2, dateC());
                             cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                            cv.put(InputData2.TaskEntry2.CATEGORY2, spinIn);
                             db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
                             db.close();
                             saveBalance();
@@ -535,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
                             cv.put(InputData2.TaskEntry2.DATE2, dateC());
                             cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                            cv.put(InputData2.TaskEntry2.CATEGORY2, spinOut);
                             db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
                             db.close();
                             saveBalance();
@@ -550,7 +607,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
             }
         });
         updateUI();
@@ -687,13 +743,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION}, null, null, null, null, null);
+            Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY}, null, null, null, null, null);
             while (cursor.moveToNext()) {
                 int idx = cursor.getColumnIndex(InputData.TaskEntry.DATE);
                 int idx1 = cursor.getColumnIndex(InputData.TaskEntry.TOTAL_VALUE);
                 int idx2 = cursor.getColumnIndex(InputData.TaskEntry.VALUE);
                 int idx3 = cursor.getColumnIndex(InputData.TaskEntry.OPERATION);
-                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+                int idx4 = cursor.getColumnIndex(InputData.TaskEntry.CATEGORY);
+                String cat = cursor.getString(idx4);
+                if (cursor.getString(idx4) == null){
+                    cat = "Отсутствует";
+                }
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c,"" + cat));
             }
             if (adapter == null) {
                 adapter = new ElementAdapter(getLayoutInflater(), elements);
@@ -708,13 +769,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (currentAccount.equals(names[1])){
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper1.getReadableDatabase();
-            Cursor cursor = db.query(InputData1.TaskEntry1.TABLE1, new String[]{InputData1.TaskEntry1._ID, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.TOTAL_VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1}, null, null, null, null, null);
+            Cursor cursor = db.query(InputData1.TaskEntry1.TABLE1, new String[]{InputData1.TaskEntry1._ID, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.TOTAL_VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1}, null, null, null, null, null);
             while (cursor.moveToNext()) {
                 int idx = cursor.getColumnIndex(InputData1.TaskEntry1.DATE1);
                 int idx1 = cursor.getColumnIndex(InputData1.TaskEntry1.TOTAL_VALUE1);
                 int idx2 = cursor.getColumnIndex(InputData1.TaskEntry1.VALUE1);
                 int idx3 = cursor.getColumnIndex(InputData1.TaskEntry1.OPERATION1);
-                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+                int idx4 = cursor.getColumnIndex(InputData1.TaskEntry1.CATEGORY1);
+                String cat = cursor.getString(idx4);
+                if (cursor.getString(idx4) == null){
+                    cat = "Отсутствует";
+                }
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c, "" + cat));
             }
             if (adapter == null) {
                 adapter = new ElementAdapter(getLayoutInflater(), elements);
@@ -730,13 +796,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (currentAccount.equals(names[2])){
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper2.getReadableDatabase();
-            Cursor cursor = db.query(InputData2.TaskEntry2.TABLE2, new String[]{InputData2.TaskEntry2._ID, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.TOTAL_VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2}, null, null, null, null, null);
+            Cursor cursor = db.query(InputData2.TaskEntry2.TABLE2, new String[]{InputData2.TaskEntry2._ID, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.TOTAL_VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2}, null, null, null, null, null);
             while (cursor.moveToNext()) {
                 int idx = cursor.getColumnIndex(InputData2.TaskEntry2.DATE2);
                 int idx1 = cursor.getColumnIndex(InputData2.TaskEntry2.TOTAL_VALUE2);
                 int idx2 = cursor.getColumnIndex(InputData2.TaskEntry2.VALUE2);
                 int idx3 = cursor.getColumnIndex(InputData2.TaskEntry2.OPERATION2);
-                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c));
+                int idx4 = cursor.getColumnIndex(InputData2.TaskEntry2.CATEGORY2);
+                String cat = cursor.getString(idx4);
+                if (cursor.getString(idx4) == null){
+                    cat = "Отсутствует";
+                }
+                elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c, "" + cat));
             }
             if (adapter == null) {
                 adapter = new ElementAdapter(getLayoutInflater(), elements);

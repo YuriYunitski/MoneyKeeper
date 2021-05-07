@@ -6,14 +6,24 @@ public class Element {
     String date;
     int operation;
     String currency;
+    String category;
 
 
-    public Element(String value, String totalValue, String date, int operation, String currency) {
+    public Element(String value, String totalValue, String date, int operation, String currency, String category) {
         this.value = value;
         this.totalValue = totalValue;
         this.date = date;
         this.operation = operation;
         this.currency = currency;
+        this.category = category;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getCurrency() {
