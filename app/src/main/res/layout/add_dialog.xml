@@ -38,6 +38,11 @@
             android:text="Расход"
             android:textColor="@color/white" />
 
+        <Spinner
+            android:id="@+id/spinner_out_cat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/light_blue_gray" />
         <RadioButton
             android:id="@+id/income"
             android:layout_width="wrap_content"
@@ -45,6 +50,12 @@
             android:buttonTint="@color/white"
             android:text="Доход"
             android:textColor="@color/white" />
+
+        <Spinner
+            android:id="@+id/spinner_in_cat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/light_blue_gray" />
     </RadioGroup>
 
     <TextView
@@ -57,20 +68,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Spinner
-        android:id="@+id/spinner_out_cat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toStartOf="@+id/radioGroup"
-        app:layout_constraintTop_toTopOf="@+id/radioGroup" />
-
-    <Spinner
-        android:id="@+id/spinner_in_cat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="@+id/spinner_out_cat"
-        app:layout_constraintTop_toBottomOf="@+id/spinner_out_cat" />
 </androidx.constraintlayout.widget.ConstraintLayout>

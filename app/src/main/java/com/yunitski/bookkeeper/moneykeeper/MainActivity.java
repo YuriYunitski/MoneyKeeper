@@ -59,6 +59,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DBHelper dbHelper;
     DBHelper1 dbHelper1;
     DBHelper2 dbHelper2;
+    ArrayList<String> outList;
+    ArrayList<String> inList;
+    ArrayAdapter<String> spinnerOutAdapter;
+    ArrayAdapter<String> spinnerInAdapter;
     ElementAdapter adapter;
     SharedPreferences sharedPreferences;
     Spinner spinner;
@@ -333,6 +337,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    public void getSpinIn(Spinner spinner){
+
+        CategoryIncome categoryIncome = new CategoryIncome(this);
+        inList = new ArrayList<>();
+        SQLiteDatabase database = categoryIncome.getReadableDatabase();
+        Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
+        while (cursor.moveToNext()){
+            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
+            int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
+            inList.add(cursor.getString(idxC));
+        }
+        if (spinnerInAdapter == null){
+            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, inList);
+            spinner.setAdapter(spinnerInAdapter);
+        } else {
+            spinnerInAdapter.clear();
+            spinnerInAdapter.addAll(inList);
+            spinnerInAdapter.notifyDataSetChanged();
+        }
+        cursor.close();
+        database.close();
+    }
+
+    public void getSpinOut(Spinner spinner){
+        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
+        outList = new ArrayList<>();
+        SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
+        Cursor cursor = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
+        while (cursor.moveToNext()){
+            int idx = cursor.getColumnIndex(CategoryOutcome.CatEntry._ID);
+            int idxC = cursor.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
+            outList.add(cursor.getString(idxC));
+        }
+        if (spinnerOutAdapter == null){
+            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, outList);
+            spinner.setAdapter(spinnerOutAdapter);
+        } else {
+            spinnerOutAdapter.clear();
+            spinnerOutAdapter.addAll(outList);
+            spinnerOutAdapter.notifyDataSetChanged();
+        }
+        cursor.close();
+        database1.close();
+    }
+
     private void launchDialogAdd(){
         loadBalance();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -350,11 +399,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Spinner spinnerIn, spinnerOut;
         spinnerIn = view.findViewById(R.id.spinner_in_cat);
         spinnerOut = view.findViewById(R.id.spinner_out_cat);
-        ArrayAdapter<String> spinnerInAdapter;
-        ArrayAdapter<String> spinnerOutAdapter;
-        CategoryIncome categoryIncome = new CategoryIncome(this);
-        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
 
+        getSpinIn(spinnerIn);
+        getSpinOut(spinnerOut);
         radioGroup = view.findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
