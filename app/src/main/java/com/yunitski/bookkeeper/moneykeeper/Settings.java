@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -26,18 +27,18 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
     FloatingActionButton apply;
     static boolean rubChecked, euroChecked, dollChecked;
     String cur;
-    TextView textView, delOp, delBal;
+    TextView textView, delOp, delBal, outCat, inCat;
     SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        rubChecked = true;
         toolbar = findViewById(R.id.toolBar3);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Настройки");
-        rubChecked = true;
         euroChecked = false;
         dollChecked = false;
         cur = "";
@@ -74,6 +75,10 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
         delOp = findViewById(R.id.del_op);
         delOp.setOnClickListener(this);
         delBal.setOnClickListener(this);
+        outCat = findViewById(R.id.out_category);
+        outCat.setOnClickListener(this);
+        inCat = findViewById(R.id.in_category);
+        inCat.setOnClickListener(this);
         apply.setOnClickListener(this);
         group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -232,6 +237,10 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
             AlertDialog dialog = builder.create();
             dialog.show();
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
+        } else if (id == R.id.out_category){
+            startActivity(new Intent(this, OutcomeCategoryActivity.class));
+        } else if (id == R.id.in_category){
+            startActivity(new Intent(this, IncomeCategoryActivity.class));
         }
     }
 }

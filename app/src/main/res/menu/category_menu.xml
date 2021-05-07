@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/product_cat"
+        android:title="Продукты"/>
+
+    <item
+        android:id="@+id/med_cat"
+        android:title="Медицина"/>
+
+    <item
+        android:id="@+id/zkh_cat"
+        android:title="ЖКХ"/>
+
+    <item
+        android:id="@+id/tec_cat"
+        android:title="Техника"/>
+
+    <item
+        android:id="@+id/clothes_cat"
+        android:title="Одежда"/>
+
+    <item
+        android:id="@+id/adv_cat"
+        android:title="Развлечения"/>
+
+    <item
+        android:id="@+id/net_cat"
+        android:title="Связь"/>
+
+
+</menu>

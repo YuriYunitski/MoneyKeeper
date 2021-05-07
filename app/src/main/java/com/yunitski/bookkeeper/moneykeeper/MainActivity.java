@@ -347,6 +347,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         radioButtonOut.setChecked(true);
         outcome = true;
         income = false;
+        Spinner spinnerIn, spinnerOut;
+        spinnerIn = view.findViewById(R.id.spinner_in_cat);
+        spinnerOut = view.findViewById(R.id.spinner_out_cat);
+        ArrayAdapter<String> spinnerInAdapter;
+        ArrayAdapter<String> spinnerOutAdapter;
+        CategoryIncome categoryIncome = new CategoryIncome(this);
+        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
+
         radioGroup = view.findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
