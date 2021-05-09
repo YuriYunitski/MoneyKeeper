@@ -20,12 +20,18 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -53,7 +59,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FloatingActionButton fab;
     ArrayList<Element> elements;
     static boolean outcome, income;
-    EditText inpValueET;
+    public static final String ACCOUNT_FILE = "accFile";
+    public static final String ACCOUNT_KEY = "acc";
+    public static final String ACCOUNT_ONE_FILE = "accountOneFile";
+    public static final String ACCOUNT_TWO_FILE = "accountTwoFile";
+    public static final String ACCOUNT_THREE_FILE = "accountThreeFile";
+    public static final String CURRENCY_KEY = "currency";
+    EditText inpValueET, changeBalanceEditText;
     RadioButton radioButtonOut, radioButtonIn;
     RadioGroup radioGroup;
     DBHelper dbHelper;
@@ -61,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DBHelper2 dbHelper2;
     ArrayList<String> outList;
     ArrayList<String> inList;
+    ArrayList<String> indexes;
     ArrayAdapter<String> spinnerOutAdapter;
     ArrayAdapter<String> spinnerInAdapter;
     ElementAdapter adapter;
@@ -76,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String spinIn;
     String spinOut;
     Document doc;
+    LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,10 +107,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         recyclerView = findViewById(R.id.recycler_list);
+        registerForContextMenu(recyclerView);
         balance = findViewById(R.id.balance);
         currency = findViewById(R.id.curremcy);
         fab = findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(this);
+        linearLayout = findViewById(R.id.linearLayout);
+        linearLayout.setOnClickListener(this);
         spinIn = "";
         spinOut = "";
         spinner = findViewById(R.id.spinner);
@@ -105,13 +122,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String fileName = "accFile";
-                sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 switch (position){
                     case 0:
                         currentAccount = names[0];
-                        editor.putString("acc", currentAccount);
+                        editor.putString(ACCOUNT_KEY, currentAccount);
                         editor.apply();
                         updateUI();
                         loadBalance();
@@ -119,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         break;
                     case 1:
                         currentAccount = names[1];
-                        editor.putString("acc", currentAccount);
+                        editor.putString(ACCOUNT_KEY, currentAccount);
                         editor.apply();
                         updateUI();
                         loadBalance();
@@ -127,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         break;
                     case 2:
                         currentAccount = names[2];
-                        editor.putString("acc", currentAccount);
+                        editor.putString(ACCOUNT_KEY, currentAccount);
                         editor.apply();
                         updateUI();
                         loadBalance();
@@ -149,16 +165,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int position = adapter.getPosition();
+        deleteFromBase(position);
+        updateUI();
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
-        String f = "accFile";
-        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-        String curAc = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
         if (curAc.equals(names[0])) {
-            String file = "myFile";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -171,9 +193,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         } else if (curAc.equals(names[1])) {
-            String file = "myFile1";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -186,9 +207,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         }  else if (curAc.equals(names[2])) {
-            String file = "myFile2";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -206,13 +226,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     void updBalCur(){
-        String f = "accFile";
-        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-        String curAc = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
         if (curAc.equals(names[0])) {
-            String file = "myFile";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -225,9 +243,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         } else if (curAc.equals(names[1])) {
-            String file = "myFile1";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -240,9 +257,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         }  else if (curAc.equals(names[2])) {
-            String file = "myFile2";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "dollar":
                     currency.setText("" + getString(R.string.dollar));
@@ -260,10 +276,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     void updateAccount(){
-
-        String fileName = "accFile";
-        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        String mPos = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String mPos = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
         int spPos = spinnerAdapter.getPosition(mPos);
         spinner.setSelection(spPos);
@@ -294,8 +308,63 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onClick(View v) {
-        launchDialogAdd();
-        updateUI();
+        int id = v.getId();
+        if (id == R.id.floatingActionButton) {
+            launchDialogAdd();
+            updateUI();
+        } else if (id == R.id.linearLayout){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false);
+            builder.setTitle("Баланс");
+            LayoutInflater inflater = getLayoutInflater();
+            View view = inflater.inflate(R.layout.balance_change_dialog, null);
+            builder.setView(view);
+            changeBalanceEditText = view.findViewById(R.id.et_bal_change);
+            changeBalanceEditText.setText("" + balance.getText().toString());
+            builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+                    currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
+
+                    if (currentAccount.equals(names[0])) {
+                        String fileNameB = "balanceSP";
+                        sharedPreferences = getSharedPreferences(fileNameB, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("b", changeBalanceEditText.getText().toString());
+                        editor.apply();
+                    } else if (currentAccount.equals(names[1])){
+                        String fileNameB1 = "balanceSP1";
+                        sharedPreferences = getSharedPreferences(fileNameB1, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("b1", changeBalanceEditText.getText().toString());
+                        editor.apply();
+
+                    } else if (currentAccount.equals(names[2])){
+
+                        String fileNameB2 = "balanceSP2";
+                        sharedPreferences = getSharedPreferences(fileNameB2, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("b2", changeBalanceEditText.getText().toString());
+                        editor.apply();
+                    }
+                    loadBalance();
+                }
+            });
+            builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
+            loadBalance();
+            updateUI();
+
+        }
     }
 
     private void init(){
@@ -340,51 +409,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             e.printStackTrace();
         }
     }
-
-//    public void getSpinIn(Spinner spinner){
-//
-//        CategoryIncome categoryIncome = new CategoryIncome(this);
-//        inList = new ArrayList<>();
-//        SQLiteDatabase database = categoryIncome.getReadableDatabase();
-//        Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
-//        while (cursor.moveToNext()){
-//            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
-//            int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
-//            inList.add(cursor.getString(idxC));
-//        }
-//        if (spinnerInAdapter == null){
-//            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, inList);
-//            spinner.setAdapter(spinnerInAdapter);
-//        } else {
-//            spinnerInAdapter.clear();
-//            spinnerInAdapter.addAll(inList);
-//            spinnerInAdapter.notifyDataSetChanged();
-//        }
-//        cursor.close();
-//        database.close();
-//    }
-//
-//    public void getSpinOut(Spinner spinner){
-//        CategoryOutcome categoryOutcome = new CategoryOutcome(this);
-//        outList = new ArrayList<>();
-//        SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
-//        Cursor cursor1 = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
-//        while (cursor1.moveToNext()){
-//            int idx = cursor1.getColumnIndex(CategoryOutcome.CatEntry._ID);
-//            int idxC = cursor1.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
-//            outList.add(cursor1.getString(idxC));
-//        }
-//        if (spinnerOutAdapter == null){
-//            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, outList);
-//            spinner.setAdapter(spinnerOutAdapter);
-//        } else {
-//            spinnerOutAdapter.clear();
-//            spinnerOutAdapter.addAll(outList);
-//            spinnerOutAdapter.notifyDataSetChanged();
-//        }
-//        cursor1.close();
-//        database1.close();
-//    }
 
     private void launchDialogAdd(){
         loadBalance();
@@ -470,9 +494,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String fileName = "accFile";
-                sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-                currentAccount = sharedPreferences.getString("acc", names[0]);
+                sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+                currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
                 if (currentAccount.equals(names[0])) {
                     if (income) {
@@ -625,9 +648,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void saveBalance(){
-        String fileName = "accFile";
-        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        currentAccount = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
         if (currentAccount.equals(names[0])) {
             String fileNameB = "balanceSP";
@@ -652,10 +674,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
     void loadBalance(){
-
-        String fileName = "accFile";
-        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        currentAccount = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
         if (currentAccount.equals(names[0])) {
             String fileNameB = "balanceSP";
@@ -679,16 +699,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     void updateUI() {
-
-
-        String f = "accFile";
-        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-        String cu = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String cu = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
         String c = "";
         if (cu.equals(names[0])){
-            String file = "myFile";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "rub":
                     c = getString(R.string.ruble);
@@ -701,9 +717,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         } else if (cu.equals(names[1])){
-            String file = "myFile1";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "rub":
                     c = getString(R.string.ruble);
@@ -716,9 +731,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         } else if (cu.equals(names[2])){
-            String file = "myFile2";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
-            String cc = sharedPreferences.getString("currency", "rub");
+            sharedPreferences = getSharedPreferences(ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
+            String cc = sharedPreferences.getString(CURRENCY_KEY, "rub");
             switch (cc) {
                 case "rub":
                     c = getString(R.string.ruble);
@@ -731,29 +745,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
             }
         }
-
-
-
-
-        String fileName = "accFile";
-        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-        currentAccount = sharedPreferences.getString("acc", names[0]);
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
         if (currentAccount.equals(names[0])) {
-
+            indexes = new ArrayList<String>();
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY}, null, null, null, null, null);
             while (cursor.moveToNext()) {
+                int ii = cursor.getColumnIndex(InputData.TaskEntry._ID);
                 int idx = cursor.getColumnIndex(InputData.TaskEntry.DATE);
                 int idx1 = cursor.getColumnIndex(InputData.TaskEntry.TOTAL_VALUE);
                 int idx2 = cursor.getColumnIndex(InputData.TaskEntry.VALUE);
                 int idx3 = cursor.getColumnIndex(InputData.TaskEntry.OPERATION);
                 int idx4 = cursor.getColumnIndex(InputData.TaskEntry.CATEGORY);
                 String cat = cursor.getString(idx4);
-                if (cursor.getString(idx4) == null){
+                if (cursor.getString(idx4).equals("")){
                     cat = "Отсутствует";
                 }
+                indexes.add(0, cursor.getString(ii));
                 elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c,"" + cat));
             }
             if (adapter == null) {
@@ -767,19 +778,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             cursor.close();
             db.close();
         } else if (currentAccount.equals(names[1])){
+            indexes = new ArrayList<String>();
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper1.getReadableDatabase();
             Cursor cursor = db.query(InputData1.TaskEntry1.TABLE1, new String[]{InputData1.TaskEntry1._ID, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.TOTAL_VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1}, null, null, null, null, null);
             while (cursor.moveToNext()) {
+                int ii = cursor.getColumnIndex(InputData1.TaskEntry1._ID);
                 int idx = cursor.getColumnIndex(InputData1.TaskEntry1.DATE1);
                 int idx1 = cursor.getColumnIndex(InputData1.TaskEntry1.TOTAL_VALUE1);
                 int idx2 = cursor.getColumnIndex(InputData1.TaskEntry1.VALUE1);
                 int idx3 = cursor.getColumnIndex(InputData1.TaskEntry1.OPERATION1);
                 int idx4 = cursor.getColumnIndex(InputData1.TaskEntry1.CATEGORY1);
                 String cat = cursor.getString(idx4);
-                if (cursor.getString(idx4) == null){
+                if (cursor.getString(idx4).equals("")){
                     cat = "Отсутствует";
                 }
+                indexes.add(0, cursor.getString(ii));
                 elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c, "" + cat));
             }
             if (adapter == null) {
@@ -794,19 +808,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             db.close();
 
         } else if (currentAccount.equals(names[2])){
+            indexes = new ArrayList<String>();
             elements = new ArrayList<Element>();
             SQLiteDatabase db = dbHelper2.getReadableDatabase();
             Cursor cursor = db.query(InputData2.TaskEntry2.TABLE2, new String[]{InputData2.TaskEntry2._ID, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.TOTAL_VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2}, null, null, null, null, null);
             while (cursor.moveToNext()) {
+                int ii = cursor.getColumnIndex(InputData2.TaskEntry2._ID);
                 int idx = cursor.getColumnIndex(InputData2.TaskEntry2.DATE2);
                 int idx1 = cursor.getColumnIndex(InputData2.TaskEntry2.TOTAL_VALUE2);
                 int idx2 = cursor.getColumnIndex(InputData2.TaskEntry2.VALUE2);
                 int idx3 = cursor.getColumnIndex(InputData2.TaskEntry2.OPERATION2);
                 int idx4 = cursor.getColumnIndex(InputData2.TaskEntry2.CATEGORY2);
                 String cat = cursor.getString(idx4);
-                if (cursor.getString(idx4) == null){
+                if (cursor.getString(idx4).equals("")){
                     cat = "Отсутствует";
                 }
+                indexes.add(0, cursor.getString(ii));
                 elements.add(0, new Element("" + cursor.getString(idx2), "" + cursor.getString(idx1), "" + cursor.getString(idx), cursor.getInt(idx3), "" + c, "" + cat));
             }
             if (adapter == null) {
@@ -821,5 +838,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             db.close();
 
         }
+    }
+
+    void deleteFromBase(int id){
+        sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String acc = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
+        if (acc.equals(names[0])){
+            SQLiteDatabase database = dbHelper.getWritableDatabase();
+            String i = indexes.get(id);
+            database.delete(InputData.TaskEntry.TABLE, InputData.TaskEntry._ID + "=?", new String[] {i});
+        } else if (acc.equals(names[1])){
+            SQLiteDatabase database = dbHelper1.getWritableDatabase();
+            String i = indexes.get(id);
+            database.delete(InputData1.TaskEntry1.TABLE1, InputData1.TaskEntry1._ID + "=?", new String[] {i});
+        } else if (acc.equals(names[2])){
+            SQLiteDatabase database = dbHelper2.getWritableDatabase();
+            String i = indexes.get(id);
+            database.delete(InputData2.TaskEntry2.TABLE2, InputData2.TaskEntry2._ID + "=?", new String[] {i});
+        }
+        updateUI();
     }
 }

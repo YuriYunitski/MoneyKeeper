@@ -11,7 +11,8 @@
     android:background="@drawable/rounded"
     android:paddingStart="@dimen/_25sdp"
     android:paddingEnd="@dimen/_25sdp"
-    android:paddingBottom="@dimen/_7sdp">
+    android:paddingBottom="@dimen/_7sdp"
+    android:clickable="true">
 
 
     <TextView

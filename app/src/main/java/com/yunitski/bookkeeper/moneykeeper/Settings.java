@@ -42,27 +42,22 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
         euroChecked = false;
         dollChecked = false;
         cur = "";
-        String f = "accFile";
-        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-        String curAc = sharedPreferences.getString("acc", "Счёт 1");
+        sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
         if (curAc.equals("Счёт 1")){
-            String file = "myFile";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            cur = sharedPreferences.getString("currency", "rub");
+            cur = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
             editor.apply();
         } else if (curAc.equals("Счёт 2")){
-            String file = "myFile1";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            cur = sharedPreferences.getString("currency", "rub");
+            cur = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
             editor.apply();
         } else if (curAc.equals("Счёт 3")){
-
-            String file = "myFile2";
-            sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            cur = sharedPreferences.getString("currency", "rub");
+            cur = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
             editor.apply();
         }
         rub = findViewById(R.id.radioButtonRuble);
@@ -113,50 +108,45 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
 
         int id = v.getId();
         if (id == R.id.set_apply) {
-
-            String f = "accFile";
-            sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-            String curAc = sharedPreferences.getString("acc", "Счёт 1");
+            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+            String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
             if (curAc.equals("Счёт 1")) {
-                String file = "myFile";
-                sharedPreferences = getSharedPreferences(file, Context.MODE_PRIVATE);
+                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 if (rubChecked) {
-                    editor.putString("currency", "rub");
+                    editor.putString(MainActivity.CURRENCY_KEY, "rub");
                     editor.apply();
                 } else if (euroChecked) {
-                    editor.putString("currency", "euro");
+                    editor.putString(MainActivity.CURRENCY_KEY, "euro");
                     editor.apply();
                 } else if (dollChecked) {
-                    editor.putString("currency", "dollar");
+                    editor.putString(MainActivity.CURRENCY_KEY, "dollar");
                     editor.apply();
                 }
             }else if (curAc.equals("Счёт 2")) {
-                String file1 = "myFile1";
-                sharedPreferences = getSharedPreferences(file1, Context.MODE_PRIVATE);
+                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor2 = sharedPreferences.edit();
                 if (rubChecked) {
-                    editor2.putString("currency", "rub");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "rub");
                     editor2.apply();
                 } else if (euroChecked) {
-                    editor2.putString("currency", "euro");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "euro");
                     editor2.apply();
                 } else if (dollChecked) {
-                    editor2.putString("currency", "dollar");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "dollar");
                     editor2.apply();
                 }
             } else if (curAc.equals("Счёт 3")) {
-                String file1 = "myFile2";
-                sharedPreferences = getSharedPreferences(file1, Context.MODE_PRIVATE);
+                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor2 = sharedPreferences.edit();
                 if (rubChecked) {
-                    editor2.putString("currency", "rub");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "rub");
                     editor2.apply();
                 } else if (euroChecked) {
-                    editor2.putString("currency", "euro");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "euro");
                     editor2.apply();
                 } else if (dollChecked) {
-                    editor2.putString("currency", "dollar");
+                    editor2.putString(MainActivity.CURRENCY_KEY, "dollar");
                     editor2.apply();
                 }
             }
@@ -169,11 +159,8 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
             builder.setPositiveButton("да", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
-
-                    String f = "accFile";
-                    sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-                    String curAc = sharedPreferences.getString("acc", "Счёт 1");
+                    sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+                    String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
                     if (curAc.equals("Счёт 1")) {
                         deleteDatabase(InputData.DB_NAME);
                     } else if (curAc.equals("Счёт 2")) {
@@ -201,10 +188,8 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
             builder.setPositiveButton("да", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
-                    String f = "accFile";
-                    sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
-                    String curAc = sharedPreferences.getString("acc", "Счёт 1");
+                    sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+                    String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
                     if (curAc.equals("Счёт 1")) {
                         String fileName = "balanceSP";
                         sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);

@@ -1,22 +1,39 @@
 package com.yunitski.bookkeeper.moneykeeper;
 
+import android.graphics.Color;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHolder> {
+public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHolder>  {
 
     private final LayoutInflater inflater;
     private final List<Element> elementList;
 
+    private int position;
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
 
 
     public ElementAdapter(LayoutInflater inflater, List<Element> elementList) {
@@ -42,6 +59,14 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
         holder.sumCur.setText(element.getCurrency());
         holder.balCur.setText(element.getCurrency());
         holder.categ.setText(element.getCategory());
+        holder.constraintLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setPosition(holder.getAdapterPosition());
+                return false;
+            }
+        });
+
     }
 
     @Override
@@ -63,10 +88,16 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
         elementList.addAll(list);
         notifyDataSetChanged();
     }
+    @Override
+    public void onViewRecycled(ViewHolder holder) {
+        holder.itemView.setOnLongClickListener(null);
+        super.onViewRecycled(holder);
+    }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         final TextView valueView, totalValueView, dateView, sumCur, balCur, categ;
         final ImageView imageView;
+        final ConstraintLayout constraintLayout;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             valueView = itemView.findViewById(R.id.tv_value);
@@ -76,6 +107,18 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
             sumCur = itemView.findViewById(R.id.sum_cur);
             balCur = itemView.findViewById(R.id.bal_cur);
             categ = itemView.findViewById(R.id.tv_category);
+            constraintLayout = itemView.findViewById(R.id.item);
+            itemView.setOnCreateContextMenuListener(this);
+
+        }
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            menu.add(0, 1, getAdapterPosition(), "action 1");
+            int positionOfMenuItem = 0;
+            MenuItem item = menu.getItem(positionOfMenuItem);
+            SpannableString s = new SpannableString("Удалить");
+            s.setSpan(new ForegroundColorSpan(Color.BLACK), 0, s.length(), 0);
+            item.setTitle(s);
         }
     }
 }
