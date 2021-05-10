@@ -26,6 +26,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
     DBHelper dbHelper;
     DBHelper1 dbHelper1;
     DBHelper2 dbHelper2;
+    CategoryIncome categoryIncome;
+    CategoryOutcome categoryOutcome;
 //    CalendarView calendarView;
 //    TextView date;
     TextView textView;
@@ -42,8 +44,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
     SQLiteDatabase database;
 //    ArrayList<String> totalIncome, totalOutcome, operation, val;
     Spinner spinner;
-    ArrayList<String> dateList, valueList, categoryList, incomeList, outcomeList;
-    ArrayList<Integer> currentDayList, currentWeekList, currentMonthList, currentYearList, operationList, categoryCount;
+    ArrayList<String> dateList, valueList, categoryList, incomeList, outcomeList, inOpList, outOpList;
+    ArrayList<Integer> currentDayList, currentWeekList, currentMonthList, currentYearList, operationList, categoryInCount, categoryOutCount;
     Set<String> allOps;
     ArrayAdapter<String> spinnerAdapter;
     String[] times = new String[]{"Неделя", "Месяц", "Год"};
@@ -59,6 +61,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         dbHelper = new DBHelper(this);
         dbHelper1 = new DBHelper1(this);
         dbHelper2 = new DBHelper2(this);
+        categoryIncome = new CategoryIncome(this);
+        categoryOutcome = new CategoryOutcome(this);
         textView = findViewById(R.id.textView7);
         spinner = findViewById(R.id.time_spinner);
         spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
@@ -79,7 +83,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
                         incomeList = new ArrayList<>();
                         outcomeList = new ArrayList<>();
                         allOps = new HashSet<>();
-                        categoryCount = new ArrayList<>();
+                        inOpList = new ArrayList<>();
+                        outOpList = new ArrayList<>();
                         database = dbHelper.getReadableDatabase();
                         Cursor cursor = database.rawQuery("SELECT " + InputData.TaskEntry.DATE + ", " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.CATEGORY + ", " + InputData.TaskEntry.OPERATION +  " FROM " + InputData.TaskEntry.TABLE + ";", null);
                         if (!(cursor.getCount() <= 0)) {
@@ -93,6 +98,28 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
                             }
                         }
                         cursor.close();
+                        database.close();
+                        database = categoryIncome.getReadableDatabase();
+                        Cursor cursor1 = database.rawQuery("SELECT " + CategoryIncome.CatInEntry.IN_CATEGORY + " FROM " + CategoryIncome.CatInEntry.TABLECI + ";", null);
+                        if (!(cursor1.getCount() <= 0)) {
+                            if (cursor1.moveToFirst()) {
+                                do {
+                                    inOpList.add(cursor1.getString(0));
+                                } while (cursor1.moveToNext());
+                            }
+                        }
+                        cursor1.close();
+                        database.close();
+                        database = categoryOutcome.getReadableDatabase();
+                        Cursor cursor2 = database.rawQuery("SELECT " + CategoryOutcome.CatEntry.OUT_CATEGORY + " FROM " + CategoryOutcome.CatEntry.TABLEC + ";", null);
+                        if (!(cursor2.getCount() <= 0)) {
+                            if (cursor2.moveToFirst()) {
+                                do {
+                                    outOpList.add(cursor2.getString(0));
+                                } while (cursor2.moveToNext());
+                            }
+                        }
+                        cursor2.close();
                         database.close();
                         for (int i = 0; i < valueList.size(); i++){
                             if (operationList.get(i) == 2131165295){
@@ -140,11 +167,18 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
                         }
                         List<String> allOpsToArray = new ArrayList<>();
                         allOpsToArray.addAll(allOps);
+                        categoryInCount = new ArrayList<>();
+                        categoryOutCount = new ArrayList<>();
                         for (int i = 0; i < allOps.size(); i++){
-                            for (int k = 0; k < categoryList.size(); k++){
+                            int c = 0;
+                            for (int k = 0; k < inOpList.size(); k++){
+                                if (allOpsToArray.get(i).equals(inOpList.get(k))){
+                                    c++;
+                                }
                             }
+                            categoryInCount.add(c);
                         }
-                        textView.setText("" + currentDayList + "\n" + currentWeekList + "\n" + currentMonthList + "\n" + currentYearList + "\n" + dateList + "\n" + valueList + "\n" + categoryList + "\n" + operationList + "\n" + incomeList + "\n" + outcomeList + "\n" + incomeSum + "\n" + outcomeSum + "\n" + allOps);
+                        textView.setText("" + currentDayList + "\n" + currentWeekList + "\n" + currentMonthList + "\n" + currentYearList + "\n" + dateList + "\n" + valueList + "\n" + categoryList + "\n" + operationList + "\n" + incomeList + "\n" + outcomeList + "\n" + incomeSum + "\n" + outcomeSum + "\n" + allOps + "\n" + allOpsToArray + "\n" + categoryInCount + "\n" + inOpList + "\n" + outOpList);
                         break;
                     case 1:
                         break;
