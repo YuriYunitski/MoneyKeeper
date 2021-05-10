@@ -58,6 +58,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         categoryIncome = new CategoryIncome(this);
         categoryOutcome = new CategoryOutcome(this);
         tvChoosenDate = findViewById(R.id.tv_current_date);
+        tvChoosenDate.setText(""+dateC());
         tvTotalIncome = findViewById(R.id.tv_total_income);
         tvTotalOutcomr = findViewById(R.id.tv_total_outcome);
         tvDelPercent = findViewById(R.id.tv_del_percent);
