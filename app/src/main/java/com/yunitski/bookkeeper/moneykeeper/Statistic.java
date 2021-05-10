@@ -1,33 +1,24 @@
 package com.yunitski.bookkeeper.moneykeeper;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CalendarView;
-import android.widget.CheckBox;
-import android.widget.TextClock;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.android.material.chip.Chip;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Statistic extends AppCompatActivity implements View.OnClickListener {
 
@@ -38,11 +29,11 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
 //    CalendarView calendarView;
 //    TextView date;
     TextView textView;
-
-    String ss;
-    boolean isSelectAll, isCategory, isValue, isTotalValue, isOperation;
-    Button param;
-    public static ArrayList<String> currentDate = new ArrayList<>();
+//
+//    String ss;
+//    boolean isSelectAll, isCategory, isValue, isTotalValue, isOperation;
+//    Button param;
+//    public static ArrayList<String> currentDate = new ArrayList<>();
     SharedPreferences sharedPreferences;
 //
 //    String s1, s2, s3, s4;
@@ -50,6 +41,12 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
 //    TextView totInc, totOutc, perc;
     SQLiteDatabase database;
 //    ArrayList<String> totalIncome, totalOutcome, operation, val;
+    Spinner spinner;
+    ArrayList<String> dateList, valueList, categoryList, incomeList, outcomeList;
+    ArrayList<Integer> currentDayList, currentWeekList, currentMonthList, currentYearList, operationList, categoryCount;
+    Set<String> allOps;
+    ArrayAdapter<String> spinnerAdapter;
+    String[] times = new String[]{"Неделя", "Месяц", "Год"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,19 +56,121 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Статистика");
+        dbHelper = new DBHelper(this);
+        dbHelper1 = new DBHelper1(this);
+        dbHelper2 = new DBHelper2(this);
+        textView = findViewById(R.id.textView7);
+        spinner = findViewById(R.id.time_spinner);
+        spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        dateList = new ArrayList<>();
+                        valueList = new ArrayList<>();
+                        operationList = new ArrayList<>();
+                        categoryList = new ArrayList<>();
+                        currentWeekList = new ArrayList<>();
+                        currentMonthList = new ArrayList<>();
+                        currentYearList = new ArrayList<>();
+                        currentDayList = new ArrayList<>();
+                        incomeList = new ArrayList<>();
+                        outcomeList = new ArrayList<>();
+                        allOps = new HashSet<>();
+                        categoryCount = new ArrayList<>();
+                        database = dbHelper.getReadableDatabase();
+                        Cursor cursor = database.rawQuery("SELECT " + InputData.TaskEntry.DATE + ", " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.CATEGORY + ", " + InputData.TaskEntry.OPERATION +  " FROM " + InputData.TaskEntry.TABLE + ";", null);
+                        if (!(cursor.getCount() <= 0)) {
+                            if (cursor.moveToFirst()) {
+                                do {
+                                    dateList.add(cursor.getString(0));
+                                    valueList.add(cursor.getString(1));
+                                    categoryList.add(cursor.getString(2));
+                                    operationList.add(cursor.getInt(3));
+                                } while (cursor.moveToNext());
+                            }
+                        }
+                        cursor.close();
+                        database.close();
+                        for (int i = 0; i < valueList.size(); i++){
+                            if (operationList.get(i) == 2131165295){
+                                incomeList.add(valueList.get(i));
+                            } else {
+                                outcomeList.add(valueList.get(i));
+                            }
+                        }
+                        String cw = "";
+                        String[] cxSp = null;
+                        for (int i = 0; i < dateList.size(); i++){
+                            cw = dateList.get(i);
+                            cxSp = cw.split("\\.");
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.set(Integer.parseInt(cxSp[2]), Integer.parseInt(cxSp[1]) - 1, Integer.parseInt(cxSp[0]));
+                            calendar.setMinimalDaysInFirstWeek(1);
+                            int d = calendar.get(Calendar.DAY_OF_MONTH);
+                            int wk = calendar.get(Calendar.WEEK_OF_MONTH);
+                            int mt = calendar.get(Calendar.MONTH) + 1;
+                            int y = calendar.get(Calendar.YEAR);
+                            currentDayList.add(d);
+                            currentWeekList.add(wk);
+                            currentMonthList.add(mt);
+                            currentYearList.add(y);
+                        }
+                        String currentDate = dateC();
+                        String[] currentDateSplit = currentDate.split("\\.");
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.set(Integer.parseInt(cxSp[2]), Integer.parseInt(cxSp[1]) - 1, Integer.parseInt(cxSp[0]));
+                        calendar.setMinimalDaysInFirstWeek(1);
+                        int wk = calendar.get(Calendar.WEEK_OF_MONTH);
+                        int incomeSum = 0;
+                        int outcomeSum = 0;
+                        for (int i = 0; i < currentWeekList.size(); i++){
+                            if (currentWeekList.get(i).equals(wk)){
+                                if (operationList.get(i) == 2131165295){
+                                    incomeSum += Integer.parseInt(valueList.get(i));
+                                } else if (operationList.get(i) == 2131165294){
+                                    outcomeSum += Integer.parseInt(valueList.get(i));
+                                }
+                            }
+                        }
+                        for (int i = 0; i < categoryList.size(); i++){
+                            allOps.add(categoryList.get(i));
+                        }
+                        List<String> allOpsToArray = new ArrayList<>();
+                        allOpsToArray.addAll(allOps);
+                        for (int i = 0; i < allOps.size(); i++){
+                            for (int k = 0; k < categoryList.size(); k++){
+                            }
+                        }
+                        textView.setText("" + currentDayList + "\n" + currentWeekList + "\n" + currentMonthList + "\n" + currentYearList + "\n" + dateList + "\n" + valueList + "\n" + categoryList + "\n" + operationList + "\n" + incomeList + "\n" + outcomeList + "\n" + incomeSum + "\n" + outcomeSum + "\n" + allOps);
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 //        totInc = findViewById(R.id.tv_inc);
 //        totOutc = findViewById(R.id.tv_outc);
 //        perc = findViewById(R.id.tv_perc);
-        param = findViewById(R.id.param);
-        param.setOnClickListener(this);
-        ss = "";
-        isSelectAll = false;
-        isValue = false;
-        isTotalValue = false;
-        isCategory = false;
-        isOperation = false;
-        currentDate.add(dateC());
-        textView = findViewById(R.id.textText);
+//        param = findViewById(R.id.param);
+//        param.setOnClickListener(this);
+//        ss = "";
+//        isSelectAll = false;
+//        isValue = false;
+//        isTotalValue = false;
+//        isCategory = false;
+//        isOperation = false;
+//        currentDate.add(dateC());
+//        textView = findViewById(R.id.textText);
 //        s1 = "";
 //        s2 = "";
 //        s3 = "";
@@ -80,9 +179,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
 //        totalOutcome = new ArrayList<>();
 //        operation = new ArrayList<>();
 //        val = new ArrayList<>();
-        dbHelper = new DBHelper(this);
-        dbHelper1 = new DBHelper1(this);
-        dbHelper2 = new DBHelper2(this);
 //        showStat();
 //        calendarView = findViewById(R.id.calendarView);
 //        date = findViewById(R.id.date);
@@ -103,139 +199,138 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         return d + "." + m + "." + y;
     }
 
-
     @Override
     public void onClick(View v) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(false);
-        builder.setTitle("Параметры");
-        LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.param_list, null);
-        builder.setView(view);
-        CheckBox cbSelectAll = view.findViewById(R.id.cb_sel_all);
-        CheckBox cbOpValue = view.findViewById(R.id.cb_op_val);
-        CheckBox cbBalance = view.findViewById(R.id.cb_bal);
-        CheckBox cbCategory = view.findViewById(R.id.cb_cat);
-        CheckBox cbOperation = view.findViewById(R.id.cb_op);
-        cbSelectAll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isSelectAll) {
-                    isSelectAll = true;
-                    isValue = true;
-                    isTotalValue = true;
-                    isCategory = true;
-                    isOperation = true;
-                } else {
-                    isSelectAll = false;
-                    isValue = false;
-                    isTotalValue = false;
-                    isCategory = false;
-                    isOperation = false;
-                }
-                cbOpValue.setChecked(isValue);
-                cbBalance.setChecked(isTotalValue);
-                cbCategory.setChecked(isCategory);
-                cbOperation.setChecked(isOperation);
-            }
-        });
-        cbOpValue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isValue){
-                    isValue = true;
-                } else {
-                    isValue = false;
-                }
-                cbOpValue.setChecked(isValue);
-            }
-        });
-        cbBalance.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isTotalValue){
-                    isTotalValue = true;
-                } else {
-                    isTotalValue = false;
-                }
-                cbBalance.setChecked(isValue);
-            }
-        });
-        cbCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isCategory){
-                    isCategory = true;
-                } else {
-                    isCategory = false;
-                }
-                cbCategory.setChecked(isCategory);
-            }
-        });
-        cbOperation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isOperation){
-                    isOperation = true;
-                } else {
-                    isOperation = false;
-                }
-                cbOperation.setChecked(isOperation);
-            }
-        });
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                showStatistic(isValue, isTotalValue, isCategory, isOperation);
-                isSelectAll = false;
-                isValue = false;
-                isTotalValue = false;
-                isCategory = false;
-                isOperation = false;
-
-            }
-        });
-        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                isSelectAll = false;
-                isValue = false;
-                isTotalValue = false;
-                isCategory = false;
-                isOperation = false;
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setCancelable(false);
+//        builder.setTitle("Параметры");
+//        LayoutInflater inflater = getLayoutInflater();
+//        View view = inflater.inflate(R.layout.param_list, null);
+//        builder.setView(view);
+//        CheckBox cbSelectAll = view.findViewById(R.id.cb_sel_all);
+//        CheckBox cbOpValue = view.findViewById(R.id.cb_op_val);
+//        CheckBox cbBalance = view.findViewById(R.id.cb_bal);
+//        CheckBox cbCategory = view.findViewById(R.id.cb_cat);
+//        CheckBox cbOperation = view.findViewById(R.id.cb_op);
+//        cbSelectAll.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isSelectAll) {
+//                    isSelectAll = true;
+//                    isValue = true;
+//                    isTotalValue = true;
+//                    isCategory = true;
+//                    isOperation = true;
+//                } else {
+//                    isSelectAll = false;
+//                    isValue = false;
+//                    isTotalValue = false;
+//                    isCategory = false;
+//                    isOperation = false;
+//                }
+//                cbOpValue.setChecked(isValue);
+//                cbBalance.setChecked(isTotalValue);
+//                cbCategory.setChecked(isCategory);
+//                cbOperation.setChecked(isOperation);
+//            }
+//        });
+//        cbOpValue.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isValue){
+//                    isValue = true;
+//                } else {
+//                    isValue = false;
+//                }
+//                cbOpValue.setChecked(isValue);
+//            }
+//        });
+//        cbBalance.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isTotalValue){
+//                    isTotalValue = true;
+//                } else {
+//                    isTotalValue = false;
+//                }
+//                cbBalance.setChecked(isValue);
+//            }
+//        });
+//        cbCategory.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isCategory){
+//                    isCategory = true;
+//                } else {
+//                    isCategory = false;
+//                }
+//                cbCategory.setChecked(isCategory);
+//            }
+//        });
+//        cbOperation.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!isOperation){
+//                    isOperation = true;
+//                } else {
+//                    isOperation = false;
+//                }
+//                cbOperation.setChecked(isOperation);
+//            }
+//        });
+//        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//
+//                showStatistic(isValue, isTotalValue, isCategory, isOperation);
+//                isSelectAll = false;
+//                isValue = false;
+//                isTotalValue = false;
+//                isCategory = false;
+//                isOperation = false;
+//
+//            }
+//        });
+//        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                isSelectAll = false;
+//                isValue = false;
+//                isTotalValue = false;
+//                isCategory = false;
+//                isOperation = false;
+//            }
+//        });
+//        AlertDialog dialog = builder.create();
+//        dialog.show();
+//        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
     }
 
-    void showStatistic(boolean isValue, boolean isTotalValue, boolean isCategory, boolean isOperation){
-        if (isValue && isTotalValue && isCategory && isOperation) {
-            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
-            String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
-            if (curAc.equals("Счёт 1")) {
-                database = dbHelper.getWritableDatabase();
-                String getAll = "SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.TOTAL_VALUE + ", " + InputData.TaskEntry.CATEGORY + ", " + InputData.TaskEntry.OPERATION + " FROM " + InputData.TaskEntry.TABLE + " WHERE " + InputData.TaskEntry.DATE + " = '" + currentDate.get(0) + "';";
-                Cursor cursor = database.rawQuery(getAll, null);
-                if (!(cursor.getCount() <= 0)){
-                    if (cursor.moveToFirst()){
-                        do {
-                            String oi = cursor.getString(2);
-                            if (cursor.getString(2).equals("")){
-                                oi = "Отсутствует";
-                            }
-                            ss += "" + cursor.getString(0) + ", " + cursor.getString(1) + ", " + oi + ", " + cursor.getString(3) + "/ ";
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                textView.setText(ss);
-            }
-        }
-    }
+//    void showStatistic(boolean isValue, boolean isTotalValue, boolean isCategory, boolean isOperation){
+//        if (isValue && isTotalValue && isCategory && isOperation) {
+//            sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+//            String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
+//            if (curAc.equals("Счёт 1")) {
+//                database = dbHelper.getWritableDatabase();
+//                String getAll = "SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.TOTAL_VALUE + ", " + InputData.TaskEntry.CATEGORY + ", " + InputData.TaskEntry.OPERATION + " FROM " + InputData.TaskEntry.TABLE + " WHERE " + InputData.TaskEntry.DATE + " = '" + currentDate.get(0) + "';";
+//                Cursor cursor = database.rawQuery(getAll, null);
+//                if (!(cursor.getCount() <= 0)){
+//                    if (cursor.moveToFirst()){
+//                        do {
+//                            String oi = cursor.getString(2);
+//                            if (cursor.getString(2).equals("")){
+//                                oi = "Отсутствует";
+//                            }
+//                            ss += "" + cursor.getString(0) + ", " + cursor.getString(1) + ", " + oi + ", " + cursor.getString(3) + "/ ";
+//                        } while (cursor.moveToNext());
+//                    }
+//                }
+//                cursor.close();
+//                database.close();
+//                textView.setText(ss);
+//            }
+//        }
+//    }
 //    private void showStat() {
 //        String f = "accFile";
 //        sharedPreferences = getSharedPreferences(f, Context.MODE_PRIVATE);
