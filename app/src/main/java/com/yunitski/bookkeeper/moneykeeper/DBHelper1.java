@@ -12,6 +12,7 @@ class DBHelper1 extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        //создать бд
         String createTable = "CREATE TABLE " + InputData1.TaskEntry1.TABLE1 + " (" + InputData1.TaskEntry1._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + InputData1.TaskEntry1.VALUE1 + " TEXT, " + InputData1.TaskEntry1.TOTAL_VALUE1 + " TEXT, "  + InputData1.TaskEntry1.DATE1 + " TEXT, " + InputData1.TaskEntry1.OPERATION1 + " INTEGER, " + InputData1.TaskEntry1.CATEGORY1 + " TEXT);";
         db.execSQL(createTable);
     }

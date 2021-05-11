@@ -1,5 +1,7 @@
 package com.yunitski.bookkeeper.moneykeeper;
 
+
+//этот класс нужен для создания элементов в recyclerview
 public class Element {
     String value;
     String totalValue;

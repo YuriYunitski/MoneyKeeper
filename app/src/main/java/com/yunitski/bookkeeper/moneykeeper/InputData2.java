@@ -3,10 +3,13 @@ package com.yunitski.bookkeeper.moneykeeper;
 import android.provider.BaseColumns;
 
 public class InputData2 {
+    //объявить имя и версию бд
     public static final String DB_NAME = "history2";
     public static final int DB_VERSION = 1;
 
 
+    //статический класс со столбцами бд
+    //нужен для упрощенного доступа к элементам
     static class TaskEntry2 implements BaseColumns {
         public static final String TABLE2 = "tasks2";
 

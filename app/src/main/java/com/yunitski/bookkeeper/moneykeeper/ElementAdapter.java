@@ -25,6 +25,7 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
     private final LayoutInflater inflater;
     private final List<Element> elementList;
 
+    //экземпляр position и 2 метода используются для получения конкретной позиции
     private int position;
 
     public int getPosition() {
@@ -74,6 +75,8 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
         return elementList.size();
     }
 
+    //метод нужен для очистки адаптера, чтобы его можно было перезаписать
+    //иначе recyclerview будет разрастаться при каждом onCreate
     public void clear() {
         int size = elementList.size();
         if (size > 0) {
@@ -114,6 +117,7 @@ public class ElementAdapter extends RecyclerView.Adapter<ElementAdapter.ViewHold
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
             menu.add(0, 1, getAdapterPosition(), "action 1");
+            //установка бэкграунда контекстного меню
             int positionOfMenuItem = 0;
             MenuItem item = menu.getItem(positionOfMenuItem);
             SpannableString s = new SpannableString("Удалить");

@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
 public class CategoryIncome extends SQLiteOpenHelper {
+    //объявить имя и версию бд
     public static final String DB_NAME = "inCat";
     public static final int DB_VERSION = 1;
 
@@ -15,6 +16,7 @@ public class CategoryIncome extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        //создать бд
         String createTable = "CREATE TABLE " + CatInEntry.TABLECI + " (" + CatInEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + CatInEntry.IN_CATEGORY + " TEXT);";
         db.execSQL(createTable);
     }
@@ -25,6 +27,8 @@ public class CategoryIncome extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + CatInEntry.TABLECI);
         onCreate(db);    }
 
+        //статический класс со столбцами бд
+        //нужен для упрощенного доступа к элементам
     static class CatInEntry implements BaseColumns {
         public static final String TABLECI = "outTable";
 

@@ -8,6 +8,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 
 public class CategoryOutcome extends SQLiteOpenHelper {
+    //объявить имя и версию бд
     public static final String DB_NAME = "outCat";
     public static final int DB_VERSION = 1;
 
@@ -17,6 +18,7 @@ public class CategoryOutcome extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        //создать бд
         String createTable = "CREATE TABLE " + CatEntry.TABLEC + " (" + CatEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + CatEntry.OUT_CATEGORY + " TEXT);";
         db.execSQL(createTable);
     }
@@ -27,6 +29,8 @@ public class CategoryOutcome extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + CatEntry.TABLEC);
         onCreate(db);    }
 
+    //статический класс со столбцами бд
+    //нужен для упрощенного доступа к элементам
     static class CatEntry implements BaseColumns {
         public static final String TABLEC = "outTable";
 

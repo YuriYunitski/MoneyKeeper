@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -35,8 +36,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
     DBHelper dbHelper;
     DBHelper1 dbHelper1;
     DBHelper2 dbHelper2;
-    CategoryIncome categoryIncome;
-    CategoryOutcome categoryOutcome;
     TextView tvChoosenDate, tvTotalIncome, tvTotalOutcomr, tvDelPercent, tvIncCateg, tvOutcCateg;
     SharedPreferences sharedPreferences;
     SQLiteDatabase database;
@@ -55,8 +54,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         dbHelper = new DBHelper(this);
         dbHelper1 = new DBHelper1(this);
         dbHelper2 = new DBHelper2(this);
-        categoryIncome = new CategoryIncome(this);
-        categoryOutcome = new CategoryOutcome(this);
         tvChoosenDate = findViewById(R.id.tv_current_date);
         tvChoosenDate.setText(""+dateC());
         tvTotalIncome = findViewById(R.id.tv_total_income);
@@ -97,447 +94,15 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
         switch (curAc) {
             case "Счёт 1": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
-                calendar.setMinimalDaysInFirstWeek(1);
-                int wk = calendar.get(Calendar.WEEK_OF_MONTH);
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                ArrayList<Integer> weeksInBase = new ArrayList<>();
-                database = dbHelper.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.DATE + ", " + InputData.TaskEntry.OPERATION + ", " + InputData.TaskEntry.CATEGORY + " FROM " + InputData.TaskEntry.TABLE + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    Calendar calendar1 = Calendar.getInstance();
-                    calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
-                    calendar1.setMinimalDaysInFirstWeek(1);
-                    int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
-                    weeksInBase.add(wk1);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getWeekStatisticMethod(dbHelper, InputData.TaskEntry.VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY, InputData.TaskEntry.TABLE, MainActivity.ACCOUNT_ONE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 2": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
-                calendar.setMinimalDaysInFirstWeek(1);
-                int wk = calendar.get(Calendar.WEEK_OF_MONTH);
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                ArrayList<Integer> weeksInBase = new ArrayList<>();
-                database = dbHelper1.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + ", " + InputData1.TaskEntry1.DATE1 + ", " + InputData1.TaskEntry1.OPERATION1 + ", " + InputData1.TaskEntry1.CATEGORY1 + " FROM " + InputData1.TaskEntry1.TABLE1 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    Calendar calendar1 = Calendar.getInstance();
-                    calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
-                    calendar1.setMinimalDaysInFirstWeek(1);
-                    int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
-                    weeksInBase.add(wk1);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getWeekStatisticMethod(dbHelper1, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1, InputData1.TaskEntry1.TABLE1, MainActivity.ACCOUNT_TWO_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 3": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
-                calendar.setMinimalDaysInFirstWeek(1);
-                int wk = calendar.get(Calendar.WEEK_OF_MONTH);
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                ArrayList<Integer> weeksInBase = new ArrayList<>();
-                database = dbHelper2.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + ", " + InputData2.TaskEntry2.DATE2 + ", " + InputData2.TaskEntry2.OPERATION2 + ", " + InputData2.TaskEntry2.CATEGORY2 + " FROM " + InputData2.TaskEntry2.TABLE2 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    Calendar calendar1 = Calendar.getInstance();
-                    calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
-                    calendar1.setMinimalDaysInFirstWeek(1);
-                    int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
-                    weeksInBase.add(wk1);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getWeekStatisticMethod(dbHelper2, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2, InputData2.TaskEntry2.TABLE2, MainActivity.ACCOUNT_THREE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
         }
@@ -548,408 +113,15 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
         switch (curAc) {
             case "Счёт 1": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                database = dbHelper.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.DATE + ", " + InputData.TaskEntry.OPERATION + ", " + InputData.TaskEntry.CATEGORY + " FROM " + InputData.TaskEntry.TABLE + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getMonthStatisticMethod(dbHelper, InputData.TaskEntry.VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY, InputData.TaskEntry.TABLE, MainActivity.ACCOUNT_ONE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 2": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                database = dbHelper1.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + ", " + InputData1.TaskEntry1.DATE1 + ", " + InputData1.TaskEntry1.OPERATION1 + ", " + InputData1.TaskEntry1.CATEGORY1 + " FROM " + InputData1.TaskEntry1.TABLE1 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getMonthStatisticMethod(dbHelper1, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1, InputData1.TaskEntry1.TABLE1, MainActivity.ACCOUNT_TWO_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 3": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                String currentMonth = currentDateSplit[1];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                ArrayList<String> monthsInBase = new ArrayList<>();
-                database = dbHelper2.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + ", " + InputData2.TaskEntry2.DATE2 + ", " + InputData2.TaskEntry2.OPERATION2 + ", " + InputData2.TaskEntry2.CATEGORY2 + " FROM " + InputData2.TaskEntry2.TABLE2 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    monthsInBase.add(currentDateToSplit[1]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getMonthStatisticMethod(dbHelper2, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2, InputData2.TaskEntry2.TABLE2, MainActivity.ACCOUNT_THREE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
         }
@@ -960,390 +132,15 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
         switch (curAc) {
             case "Счёт 1": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                database = dbHelper.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.DATE + ", " + InputData.TaskEntry.OPERATION + ", " + InputData.TaskEntry.CATEGORY + " FROM " + InputData.TaskEntry.TABLE + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getYearStatisticMethod(dbHelper, InputData.TaskEntry.VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY, InputData.TaskEntry.TABLE, MainActivity.ACCOUNT_ONE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 2": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                database = dbHelper1.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + ", " + InputData1.TaskEntry1.DATE1 + ", " + InputData1.TaskEntry1.OPERATION1 + ", " + InputData1.TaskEntry1.CATEGORY1 + " FROM " + InputData1.TaskEntry1.TABLE1 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getYearStatisticMethod(dbHelper1, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1, InputData1.TaskEntry1.TABLE1, MainActivity.ACCOUNT_TWO_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
             case "Счёт 3": {
-                String currentDate = tvChoosenDate.getText().toString();
-                String[] currentDateSplit = currentDate.split("\\.");
-                String currentYear = currentDateSplit[2];
-                ArrayList<String> dateList = new ArrayList<>();
-                ArrayList<String> valueList = new ArrayList<>();
-                ArrayList<String> operationList = new ArrayList<>();
-                ArrayList<String> categoryList = new ArrayList<>();
-                ArrayList<String> yearsInBase = new ArrayList<>();
-                database = dbHelper2.getReadableDatabase();
-                Cursor cursor = database.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + ", " + InputData2.TaskEntry2.DATE2 + ", " + InputData2.TaskEntry2.OPERATION2 + ", " + InputData2.TaskEntry2.CATEGORY2 + " FROM " + InputData2.TaskEntry2.TABLE2 + ";", null);
-                if (!(cursor.getCount() <= 0)) {
-                    if (cursor.moveToFirst()) {
-                        do {
-                            dateList.add(cursor.getString(1));
-                            valueList.add(cursor.getString(0));
-                            operationList.add(cursor.getString(2));
-                            categoryList.add(cursor.getString(3));
-                        } while (cursor.moveToNext());
-                    }
-                }
-                cursor.close();
-                database.close();
-                for (int i = 0; i < dateList.size(); i++) {
-                    String[] currentDateToSplit = dateList.get(i).split("\\.");
-                    yearsInBase.add(currentDateToSplit[2]);
-                }
-                ArrayList<String> incomeValues = new ArrayList<>();
-                ArrayList<String> incomeOperations = new ArrayList<>();
-                ArrayList<String> incomeCategories = new ArrayList<>();
-                ArrayList<String> outcomeValues = new ArrayList<>();
-                ArrayList<String> outcomeOperations = new ArrayList<>();
-                ArrayList<String> outcomeCategories = new ArrayList<>();
-                for (int i = 0; i < dateList.size(); i++) {
-                    if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear)) {
-                        incomeValues.add(valueList.get(i));
-                        incomeOperations.add(operationList.get(i));
-                        incomeCategories.add(categoryList.get(i));
-                    } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear)) {
-                        outcomeValues.add(valueList.get(i));
-                        outcomeOperations.add(operationList.get(i));
-                        outcomeCategories.add(categoryList.get(i));
-                    }
-                }
-                int incSum = 0;
-                int outcSum = 0;
-                if (incomeValues.size() != 0) {
-                    for (int i = 0; i < incomeValues.size(); i++) {
-                        incSum += Integer.parseInt(incomeValues.get(i));
-                    }
-                    for (int i = 0; i < outcomeValues.size(); i++) {
-                        outcSum += Integer.parseInt(outcomeValues.get(i));
-                    }
-                }
-                double percent = 0.0;
-                if (incSum != 0) {
-                    percent = (double) outcSum / incSum * 100.0;
-                }
-                Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
-                ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
-                Set<String> incomeCatSet = new HashSet<>(incomeCategories);
-                ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-                ArrayList<Integer> incCatCount = new ArrayList<>();
-                ArrayList<Integer> outcCatCount = new ArrayList<>();
-                String allInCatWithPercent = "";
-                String allOutCatWithPercent = "";
-                for (int i = 0; i < incomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < incomeCategories.size(); k++) {
-                        if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    incCatCount.add(c);
-                }
-                for (int i = 0; i < outcomeCatSet.size(); i++) {
-                    int c = 0;
-                    for (int k = 0; k < outcomeCategories.size(); k++) {
-                        if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-                            c++;
-                        }
-                    }
-                    outcCatCount.add(c);
-                }
-                ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-                ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-                int totalInCat = 0;
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    totalInCat += incCatCount.get(i);
-                }
-                int totalOutCat = 0;
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    totalOutCat += outcCatCount.get(i);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-                    percentOfIncomeCat.add(perc);
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-                    percentOfOutcomeCat.add(perc);
-                }
-                for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-                    allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-                }
-                for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-                    allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-                }
-                sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
-                String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
-                String c1 = "";
-                switch (cc) {
-                    case "rub":
-                        c1 = getString(R.string.ruble);
-                        break;
-                    case "euro":
-                        c1 = getString(R.string.euro);
-                        break;
-                    case "dollar":
-                        c1 = getString(R.string.dollar);
-                        break;
-                }
-                tvTotalIncome.setText("" + incSum + c1);
-                tvTotalOutcomr.setText("" + outcSum + c1);
-                tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-                tvIncCateg.setText("" + allInCatWithPercent);
-                tvOutcCateg.setText("" + allOutCatWithPercent);
+                getYearStatisticMethod(dbHelper2, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2, InputData2.TaskEntry2.TABLE2, MainActivity.ACCOUNT_THREE_FILE, MainActivity.CURRENCY_KEY);
                 break;
             }
         }
@@ -1418,5 +215,410 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         dialog.show();
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
 
+    }
+
+    void getWeekStatisticMethod(SQLiteOpenHelper dbHelperM, String dbValue, String dbDate, String dbOperation, String dbCategory, String dbTable, String accountFile, String currencyKey){
+        String currentDate = tvChoosenDate.getText().toString();
+        //сплитуем чтобы получить отдельно день месяц и год
+        //по этим значением из бд будем подбирать соответствующие элементы таблицы
+        String[] currentDateSplit = currentDate.split("\\.");
+        String currentYear = currentDateSplit[2];
+        String currentMonth = currentDateSplit[1];
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
+        calendar.setMinimalDaysInFirstWeek(1);
+        int wk = calendar.get(Calendar.WEEK_OF_MONTH);
+        //список всех дат
+        ArrayList<String> dateList = new ArrayList<>();
+        //список всех значений
+        ArrayList<String> valueList = new ArrayList<>();
+        //
+        ArrayList<String> operationList = new ArrayList<>();
+        ArrayList<String> categoryList = new ArrayList<>();
+        ArrayList<String> yearsInBase = new ArrayList<>();
+        ArrayList<String> monthsInBase = new ArrayList<>();
+        ArrayList<Integer> weeksInBase = new ArrayList<>();
+        database = dbHelperM.getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT " + dbValue + ", " + dbDate + ", " + dbOperation + ", " + dbCategory + " FROM " + dbTable + ";", null);
+        if (!(cursor.getCount() <= 0)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    dateList.add(cursor.getString(1));
+                    valueList.add(cursor.getString(0));
+                    operationList.add(cursor.getString(2));
+                    categoryList.add(cursor.getString(3));
+                } while (cursor.moveToNext());
+            }
+        }
+        cursor.close();
+        database.close();
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            yearsInBase.add(currentDateToSplit[2]);
+        }
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            monthsInBase.add(currentDateToSplit[1]);
+        }
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            Calendar calendar1 = Calendar.getInstance();
+            calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
+            calendar1.setMinimalDaysInFirstWeek(1);
+            int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
+            weeksInBase.add(wk1);
+        }
+        ArrayList<String> incomeValues = new ArrayList<>();
+        ArrayList<String> incomeCategories = new ArrayList<>();
+        ArrayList<String> outcomeValues = new ArrayList<>();
+        ArrayList<String> outcomeCategories = new ArrayList<>();
+        for (int i = 0; i < dateList.size(); i++) {
+            if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
+                incomeValues.add(valueList.get(i));
+                incomeCategories.add(categoryList.get(i));
+            } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
+                outcomeValues.add(valueList.get(i));
+                outcomeCategories.add(categoryList.get(i));
+            }
+        }
+        int incSum = 0;
+        int outcSum = 0;
+        if (incomeValues.size() != 0) {
+            for (int i = 0; i < incomeValues.size(); i++) {
+                incSum += Integer.parseInt(incomeValues.get(i));
+            }
+            for (int i = 0; i < outcomeValues.size(); i++) {
+                outcSum += Integer.parseInt(outcomeValues.get(i));
+            }
+        }
+        double percent = 0.0;
+        if (incSum != 0) {
+            percent = (double) outcSum / incSum * 100.0;
+        }
+        Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
+        ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
+        Set<String> incomeCatSet = new HashSet<>(incomeCategories);
+        ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
+        ArrayList<Integer> incCatCount = new ArrayList<>();
+        ArrayList<Integer> outcCatCount = new ArrayList<>();
+        String allInCatWithPercent = "";
+        String allOutCatWithPercent = "";
+        for (int i = 0; i < incomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < incomeCategories.size(); k++) {
+                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            incCatCount.add(c);
+        }
+        for (int i = 0; i < outcomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < outcomeCategories.size(); k++) {
+                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            outcCatCount.add(c);
+        }
+        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
+        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
+        int totalInCat = 0;
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            totalInCat += incCatCount.get(i);
+        }
+        int totalOutCat = 0;
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            totalOutCat += outcCatCount.get(i);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
+            percentOfIncomeCat.add(perc);
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
+            percentOfOutcomeCat.add(perc);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
+        }
+        sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
+        String cc = sharedPreferences.getString(currencyKey, "rub");
+        String c1 = "";
+        switch (cc) {
+            case "rub":
+                c1 = getString(R.string.ruble);
+                break;
+            case "euro":
+                c1 = getString(R.string.euro);
+                break;
+            case "dollar":
+                c1 = getString(R.string.dollar);
+                break;
+        }
+        tvTotalIncome.setText("" + incSum + c1);
+        tvTotalOutcomr.setText("" + outcSum + c1);
+        tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
+        tvIncCateg.setText("" + allInCatWithPercent);
+        tvOutcCateg.setText("" + allOutCatWithPercent);
+    }
+
+    void getMonthStatisticMethod(SQLiteOpenHelper dbHelperM, String dbValue, String dbDate, String dbOperation, String dbCategory, String dbTable, String accountFile, String currencyKey){
+        String currentDate = tvChoosenDate.getText().toString();
+        String[] currentDateSplit = currentDate.split("\\.");
+        String currentYear = currentDateSplit[2];
+        String currentMonth = currentDateSplit[1];
+        ArrayList<String> dateList = new ArrayList<>();
+        ArrayList<String> valueList = new ArrayList<>();
+        ArrayList<String> operationList = new ArrayList<>();
+        ArrayList<String> categoryList = new ArrayList<>();
+        ArrayList<String> yearsInBase = new ArrayList<>();
+        ArrayList<String> monthsInBase = new ArrayList<>();
+        database = dbHelperM.getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT " + dbValue + ", " + dbDate + ", " + dbOperation + ", " + dbCategory + " FROM " + dbTable + ";", null);
+        if (!(cursor.getCount() <= 0)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    dateList.add(cursor.getString(1));
+                    valueList.add(cursor.getString(0));
+                    operationList.add(cursor.getString(2));
+                    categoryList.add(cursor.getString(3));
+                } while (cursor.moveToNext());
+            }
+        }
+        cursor.close();
+        database.close();
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            yearsInBase.add(currentDateToSplit[2]);
+        }
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            monthsInBase.add(currentDateToSplit[1]);
+        }
+        ArrayList<String> incomeValues = new ArrayList<>();
+        ArrayList<String> incomeCategories = new ArrayList<>();
+        ArrayList<String> outcomeValues = new ArrayList<>();
+        ArrayList<String> outcomeCategories = new ArrayList<>();
+        for (int i = 0; i < dateList.size(); i++) {
+            if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
+                incomeValues.add(valueList.get(i));
+                incomeCategories.add(categoryList.get(i));
+            } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth)) {
+                outcomeValues.add(valueList.get(i));
+                outcomeCategories.add(categoryList.get(i));
+            }
+        }
+        int incSum = 0;
+        int outcSum = 0;
+        if (incomeValues.size() != 0) {
+            for (int i = 0; i < incomeValues.size(); i++) {
+                incSum += Integer.parseInt(incomeValues.get(i));
+            }
+            for (int i = 0; i < outcomeValues.size(); i++) {
+                outcSum += Integer.parseInt(outcomeValues.get(i));
+            }
+        }
+        double percent = 0.0;
+        if (incSum != 0) {
+            percent = (double) outcSum / incSum * 100.0;
+        }
+        Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
+        ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
+        Set<String> incomeCatSet = new HashSet<>(incomeCategories);
+        ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
+        ArrayList<Integer> incCatCount = new ArrayList<>();
+        ArrayList<Integer> outcCatCount = new ArrayList<>();
+        String allInCatWithPercent = "";
+        String allOutCatWithPercent = "";
+        for (int i = 0; i < incomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < incomeCategories.size(); k++) {
+                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            incCatCount.add(c);
+        }
+        for (int i = 0; i < outcomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < outcomeCategories.size(); k++) {
+                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            outcCatCount.add(c);
+        }
+        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
+        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
+        int totalInCat = 0;
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            totalInCat += incCatCount.get(i);
+        }
+        int totalOutCat = 0;
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            totalOutCat += outcCatCount.get(i);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
+            percentOfIncomeCat.add(perc);
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
+            percentOfOutcomeCat.add(perc);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
+        }
+        sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
+        String cc = sharedPreferences.getString(currencyKey, "rub");
+        String c1 = "";
+        switch (cc) {
+            case "rub":
+                c1 = getString(R.string.ruble);
+                break;
+            case "euro":
+                c1 = getString(R.string.euro);
+                break;
+            case "dollar":
+                c1 = getString(R.string.dollar);
+                break;
+        }
+        tvTotalIncome.setText("" + incSum + c1);
+        tvTotalOutcomr.setText("" + outcSum + c1);
+        tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
+        tvIncCateg.setText("" + allInCatWithPercent);
+        tvOutcCateg.setText("" + allOutCatWithPercent);
+
+    }
+    void getYearStatisticMethod(SQLiteOpenHelper dbHelperM, String dbValue, String dbDate, String dbOperation, String dbCategory, String dbTable, String accountFile, String currencyKey){
+        String currentDate = tvChoosenDate.getText().toString();
+        String[] currentDateSplit = currentDate.split("\\.");
+        String currentYear = currentDateSplit[2];
+        ArrayList<String> dateList = new ArrayList<>();
+        ArrayList<String> valueList = new ArrayList<>();
+        ArrayList<String> operationList = new ArrayList<>();
+        ArrayList<String> categoryList = new ArrayList<>();
+        ArrayList<String> yearsInBase = new ArrayList<>();
+        database = dbHelperM.getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT " + dbValue + ", " + dbDate + ", " + dbOperation + ", " + dbCategory + " FROM " + dbTable + ";", null);
+        if (!(cursor.getCount() <= 0)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    dateList.add(cursor.getString(1));
+                    valueList.add(cursor.getString(0));
+                    operationList.add(cursor.getString(2));
+                    categoryList.add(cursor.getString(3));
+                } while (cursor.moveToNext());
+            }
+        }
+        cursor.close();
+        database.close();
+        for (int i = 0; i < dateList.size(); i++) {
+            String[] currentDateToSplit = dateList.get(i).split("\\.");
+            yearsInBase.add(currentDateToSplit[2]);
+        }
+        ArrayList<String> incomeValues = new ArrayList<>();
+        ArrayList<String> incomeCategories = new ArrayList<>();
+        ArrayList<String> outcomeValues = new ArrayList<>();
+        ArrayList<String> outcomeCategories = new ArrayList<>();
+        for (int i = 0; i < dateList.size(); i++) {
+            if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear)) {
+                incomeValues.add(valueList.get(i));
+                incomeCategories.add(categoryList.get(i));
+            } else if (operationList.get(i).equals("2131165294") && yearsInBase.get(i).equals(currentYear)) {
+                outcomeValues.add(valueList.get(i));
+                outcomeCategories.add(categoryList.get(i));
+            }
+        }
+        int incSum = 0;
+        int outcSum = 0;
+        if (incomeValues.size() != 0) {
+            for (int i = 0; i < incomeValues.size(); i++) {
+                incSum += Integer.parseInt(incomeValues.get(i));
+            }
+            for (int i = 0; i < outcomeValues.size(); i++) {
+                outcSum += Integer.parseInt(outcomeValues.get(i));
+            }
+        }
+        double percent = 0.0;
+        if (incSum != 0) {
+            percent = (double) outcSum / incSum * 100.0;
+        }
+        Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
+        ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
+        Set<String> incomeCatSet = new HashSet<>(incomeCategories);
+        ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
+        ArrayList<Integer> incCatCount = new ArrayList<>();
+        ArrayList<Integer> outcCatCount = new ArrayList<>();
+        String allInCatWithPercent = "";
+        String allOutCatWithPercent = "";
+        for (int i = 0; i < incomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < incomeCategories.size(); k++) {
+                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            incCatCount.add(c);
+        }
+        for (int i = 0; i < outcomeCatSet.size(); i++) {
+            int c = 0;
+            for (int k = 0; k < outcomeCategories.size(); k++) {
+                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
+                    c++;
+                }
+            }
+            outcCatCount.add(c);
+        }
+        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
+        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
+        int totalInCat = 0;
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            totalInCat += incCatCount.get(i);
+        }
+        int totalOutCat = 0;
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            totalOutCat += outcCatCount.get(i);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
+            percentOfIncomeCat.add(perc);
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
+            percentOfOutcomeCat.add(perc);
+        }
+        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
+            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
+        }
+        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
+            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
+        }
+        sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
+        String cc = sharedPreferences.getString(currencyKey, "rub");
+        String c1 = "";
+        switch (cc) {
+            case "rub":
+                c1 = getString(R.string.ruble);
+                break;
+            case "euro":
+                c1 = getString(R.string.euro);
+                break;
+            case "dollar":
+                c1 = getString(R.string.dollar);
+                break;
+        }
+        tvTotalIncome.setText("" + incSum + c1);
+        tvTotalOutcomr.setText("" + outcSum + c1);
+        tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
+        tvIncCateg.setText("" + allInCatWithPercent);
+        tvOutcCateg.setText("" + allOutCatWithPercent);
     }
 }
