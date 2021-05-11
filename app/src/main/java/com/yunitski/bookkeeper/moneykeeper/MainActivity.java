@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ArrayAdapter<String> spinnerAdapter;
     private Thread secThread;
     private Runnable runnable;
-    private String dollar, euro, belRub, pound, currentAccount;
+    private String dollar, euro, belRub, pound, currentAccount, gryvan, tenge;
     int res;
     final String[] names = new String[] {"Счёт 1", "Счёт 2", "Счёт 3"};
 
@@ -292,6 +293,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             intent.putExtra("eur", euro);
             intent.putExtra("belr", belRub);
             intent.putExtra("pon", pound);
+            intent.putExtra("tenge", tenge);
+            intent.putExtra("gryvna", gryvan);
             startActivity(intent);
         } else if (id == R.id.settings){
 
@@ -389,6 +392,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String[] st = s.split("<td>");
             String[] name = st[4].split("<");
             String[] value = st[5].split("<");
+            String s1 = elementsFromTable.get(14).toString();
+            String[] st1 = s1.split("<td>");
+            String[] name1 = st1[4].split("<");
+            String[] value1 = st1[5].split("<");
             String s2 = elementsFromTable.get(12).toString();
             String[] st2 = s2.split("<td>");
             String[] name2 = st2[4].split("<");
@@ -401,10 +408,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String[] st4 = s4.split("<td>");
             String[] name4 = st4[4].split("<");
             String[] value4 = st4[5].split("<");
+            String s5 = elementsFromTable.get(28).toString();
+            String[] st5 = s5.split("<td>");
+            String[] name5 = st5[4].split("<");
+            String[] value5 = st5[5].split("<");
             dollar = name[0] + " : " + value[0] + getString(R.string.ruble);
             euro = name2[0]  + " : " + value2[0] + "₽";
             belRub = name3[0] + " : " + value3[0] + "₽";
             pound = name4[0] + " : " + value4[0] + "₽";
+            tenge = name1[0] + " : " + value1[0] + "₽" + " на 100₽";
+            gryvan = name5[0] + " : " + value5[0] + "₽" + " на 10₽";
         } catch (IOException e) {
             e.printStackTrace();
         }

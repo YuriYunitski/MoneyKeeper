@@ -102,6 +102,35 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#686868" />
+        <TextView
+            android:id="@+id/tenge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="TextView"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_12sdp"/>
+
+        <View
+            android:id="@+id/divider4"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#686868" />
+
+        <TextView
+            android:id="@+id/gryvna"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="TextView"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_12sdp"/>
+
+        <View
+            android:id="@+id/divider5"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#686868" />
 
 
     </LinearLayout>

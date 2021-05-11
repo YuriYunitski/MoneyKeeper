@@ -8,4 +8,8 @@
     <string name="ruble">₽</string>
     <string name="euro">€</string>
     <string name="dollar">$</string>
+
+    <string name="default_theme">Default Theme</string>
+    <string name="dark">Dark Theme</string>
+    <string name="NoActionBar">NoActionBar Theme</string>
 </resources>
