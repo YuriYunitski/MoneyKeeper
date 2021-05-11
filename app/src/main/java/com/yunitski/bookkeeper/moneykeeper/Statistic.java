@@ -225,16 +225,14 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         String currentYear = currentDateSplit[2];
         String currentMonth = currentDateSplit[1];
         Calendar calendar = Calendar.getInstance();
+        //месяцы в calendar начинаются с 0, чтобы неделя определялась верно, надо отнять 1 от текущего месяца
         calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
         calendar.setMinimalDaysInFirstWeek(1);
         int wk = calendar.get(Calendar.WEEK_OF_MONTH);
-        //список всех дат
-        ArrayList<String> dateList = new ArrayList<>();
-        //список всех значений
-        ArrayList<String> valueList = new ArrayList<>();
-        //
-        ArrayList<String> operationList = new ArrayList<>();
-        ArrayList<String> categoryList = new ArrayList<>();
+        ArrayList<String> dateList = new ArrayList<>(); //список всех дат
+        ArrayList<String> valueList = new ArrayList<>(); //список всех значений
+        ArrayList<String> operationList = new ArrayList<>(); //список всех операция, т.е. расход и доход
+        ArrayList<String> categoryList = new ArrayList<>(); //список всех категорий
         ArrayList<String> yearsInBase = new ArrayList<>();
         ArrayList<String> monthsInBase = new ArrayList<>();
         ArrayList<Integer> weeksInBase = new ArrayList<>();
@@ -268,11 +266,12 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
             weeksInBase.add(wk1);
         }
-        ArrayList<String> incomeValues = new ArrayList<>();
-        ArrayList<String> incomeCategories = new ArrayList<>();
-        ArrayList<String> outcomeValues = new ArrayList<>();
-        ArrayList<String> outcomeCategories = new ArrayList<>();
+        ArrayList<String> incomeValues = new ArrayList<>(); //значения доходов
+        ArrayList<String> incomeCategories = new ArrayList<>(); //категории доходов
+        ArrayList<String> outcomeValues = new ArrayList<>(); // значения расходов
+        ArrayList<String> outcomeCategories = new ArrayList<>(); //категории расходов
         for (int i = 0; i < dateList.size(); i++) {
+            //условие для того, чтобы из всех списков отобрать только нужные значения, разделенные по суммам и категориям
             if (operationList.get(i).equals("2131165295") && yearsInBase.get(i).equals(currentYear) && monthsInBase.get(i).equals(currentMonth) && weeksInBase.get(i).equals(wk)) {
                 incomeValues.add(valueList.get(i));
                 incomeCategories.add(categoryList.get(i));
@@ -283,6 +282,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         }
         int incSum = 0;
         int outcSum = 0;
+        //проверка на ноль и nan
         if (incomeValues.size() != 0) {
             for (int i = 0; i < incomeValues.size(); i++) {
                 incSum += Integer.parseInt(incomeValues.get(i));
@@ -295,7 +295,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         if (incSum != 0) {
             percent = (double) outcSum / incSum * 100.0;
         }
-        Set<String> outcomeCatSet = new HashSet<>(outcomeCategories);
+        Set<String> outcomeCatSet = new HashSet<>(outcomeCategories); //убрать все дубли
         ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
         Set<String> incomeCatSet = new HashSet<>(incomeCategories);
         ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
@@ -303,6 +303,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         ArrayList<Integer> outcCatCount = new ArrayList<>();
         String allInCatWithPercent = "";
         String allOutCatWithPercent = "";
+        //двойной цикл для нахлждения количества повторяющихся категорий
+        //чтобы в дальнейшем рассчитать процент
         for (int i = 0; i < incomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < incomeCategories.size(); k++) {
