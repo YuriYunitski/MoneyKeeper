@@ -69,14 +69,67 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/textView18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:text="Расход"
+                android:textColor="#D8D8D8"
+                android:textSize="@dimen/_14sdp" />
+
+            <TextView
+                android:id="@+id/tv_outc_categ_val_sum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:text="TextView"
+                android:textSize="@dimen/_20sdp" />
+
+            <View
+                android:id="@+id/divider15"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="#B6B6B6" />
+
+
+            <TextView
+                android:id="@+id/textView16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:text="Доход"
+                android:textColor="#D8D8D8"
+                android:textSize="@dimen/_14sdp" />
+
+            <TextView
+                android:id="@+id/tv_inc_categ_val_sum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:text="TextView"
+                android:textSize="@dimen/_20sdp" />
+
+            <View
+                android:id="@+id/divider14"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="#B6B6B6" />
+
 
             <TextView
                 android:id="@+id/textView7"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="16dp"
-                android:text="Всего доходов"
+                android:layout_marginTop="8dp"
+                android:text="Общий доход"
                 android:textColor="#D8D8D8"
                 android:textSize="@dimen/_14sdp" />
 
@@ -102,7 +155,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="8dp"
-                android:text="Всего расходов"
+                android:text="Общий расход"
                 android:textColor="#D8D8D8"
                 android:textSize="@dimen/_14sdp" />
 
@@ -128,7 +181,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="8dp"
-                android:text="Процент расходов от доходов"
+                android:text="Процент расхода от дохода"
                 android:textColor="#D8D8D8"
                 android:textSize="@dimen/_14sdp" />
 
@@ -140,65 +193,49 @@
                 android:layout_marginTop="8dp"
                 android:text="TextView"
                 android:textSize="@dimen/_20sdp" />
-            <View
-                android:id="@+id/divider14"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="#B6B6B6" />
-
-            <TextView
-                android:id="@+id/textView15"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:text="Категории дохода"
-                android:textColor="#D8D8D8"
-                android:textSize="@dimen/_14sdp" />
 
 
+<!--            <TextView-->
+<!--                android:id="@+id/textView15"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="24dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:text="Категории дохода"-->
+<!--                android:textColor="#D8D8D8"-->
+<!--                android:textSize="@dimen/_14sdp" />-->
 
-
-            <TextView
-                android:id="@+id/tv_inc_categ"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:text="TextView"
-                android:textSize="@dimen/_20sdp" />
-
-            <View
-                android:id="@+id/divider15"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="#B6B6B6" />
-
-            <TextView
-                android:id="@+id/textView17"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:text="Категории расхода"
-                android:textColor="#D8D8D8"
-                android:textSize="@dimen/_14sdp" />
-
-            <TextView
-                android:id="@+id/tv_outc_categ"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="8dp"
-                android:text="TextView"
-                android:textSize="@dimen/_20sdp" />
+<!--            <TextView-->
+<!--                android:id="@+id/tv_inc_categ"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="24dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:text="TextView"-->
+<!--                android:textSize="@dimen/_20sdp" />-->
 
 
 
 
 
+<!--            <TextView-->
+<!--                android:id="@+id/textView17"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="24dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:text="Категории расхода"-->
+<!--                android:textColor="#D8D8D8"-->
+<!--                android:textSize="@dimen/_14sdp" />-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tv_outc_categ"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="24dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:text="TextView"-->
+<!--                android:textSize="@dimen/_20sdp" />-->
 
 
 
