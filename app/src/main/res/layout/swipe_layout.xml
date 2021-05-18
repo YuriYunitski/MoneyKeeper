@@ -74,6 +74,7 @@
             android:text="rub" />
     </LinearLayout>
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_list"
         android:layout_width="wrap_content"
@@ -82,9 +83,9 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
+        app:layout_constraintTop_toBottomOf="@+id/rest_type_value" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
@@ -108,6 +109,48 @@
         app:layout_constraintBottom_toBottomOf="@+id/linearLayout"
         app:layout_constraintEnd_toStartOf="@+id/linearLayout"
         app:layout_constraintTop_toTopOf="@+id/linearLayout" />
+
+    <TextView
+        android:id="@+id/limit_type_choosen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="1sp"
+        android:layout_marginTop="8dp"
+        android:background="@color/light_blue_gray"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <TextView
+        android:id="@+id/limit_value_choosen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="1sp"
+        android:layout_marginTop="8dp"
+        android:background="@color/light_blue_gray"
+        app:layout_constraintStart_toEndOf="@+id/limit_type_choosen"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <TextView
+        android:id="@+id/rest_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="1sp"
+        android:background="@color/light_blue_gray"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/limit_type_choosen" />
+
+    <TextView
+        android:id="@+id/rest_type_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="1sp"
+        android:background="@color/light_blue_gray"
+        app:layout_constraintStart_toEndOf="@+id/rest_type"
+        app:layout_constraintTop_toBottomOf="@+id/limit_value_choosen" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

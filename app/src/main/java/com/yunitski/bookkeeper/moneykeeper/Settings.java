@@ -204,24 +204,31 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
                 public void onClick(DialogInterface dialog, int which) {
                     sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
                     String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
-                    if (curAc.equals("Счёт 1")) {
-                        String fileName = "balanceSP";
-                        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b", "0");
-                        editor.apply();
-                    } else if (curAc.equals("Счёт 2")) {
-                        String fileName = "balanceSP1";
-                        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b1", "0");
-                        editor.apply();
-                    } else if (curAc.equals("Счёт 3")) {
-                        String fileName = "balanceSP2";
-                        sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b2", "0");
-                        editor.apply();
+                    switch (curAc) {
+                        case "Счёт 1": {
+                            String fileName = "balanceSP";
+                            sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("b", "0");
+                            editor.apply();
+                            break;
+                        }
+                        case "Счёт 2": {
+                            String fileName = "balanceSP1";
+                            sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("b1", "0");
+                            editor.apply();
+                            break;
+                        }
+                        case "Счёт 3": {
+                            String fileName = "balanceSP2";
+                            sharedPreferences = getSharedPreferences(fileName, Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("b2", "0");
+                            editor.apply();
+                            break;
+                        }
                     }
 
 

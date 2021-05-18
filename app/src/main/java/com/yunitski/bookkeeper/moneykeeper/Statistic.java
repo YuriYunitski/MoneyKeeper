@@ -62,8 +62,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         tvTotalIncome = findViewById(R.id.tv_total_income);
         tvTotalOutcomr = findViewById(R.id.tv_total_outcome);
         tvDelPercent = findViewById(R.id.tv_del_percent);
-//        tvIncCateg = findViewById(R.id.tv_inc_categ);
-//        tvOutcCateg = findViewById(R.id.tv_outc_categ);
         tvInCategSum = findViewById(R.id.tv_inc_categ_val_sum);
         tvOutCategSum = findViewById(R.id.tv_outc_categ_val_sum);
         chooseBtn = findViewById(R.id.button);
@@ -331,35 +329,13 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
         Set<String> incomeCatSet = new HashSet<>(incomeCategories);
         ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-        //        ArrayList<Integer> incCatCount = new ArrayList<>();
-//        ArrayList<Integer> outcCatCount = new ArrayList<>();
+
         ArrayList<Integer> incCatVal = new ArrayList<>();
         ArrayList<Integer> outcCatVal = new ArrayList<>();
-//        String allInCatWithPercent = "";
-//        String allOutCatWithPercent = "";
+
         String allInCatValueSum = "";
         String allOutCatValueSum = "";
-        //двойной цикл для нахлждения количества повторяющихся категорий
-        //чтобы в дальнейшем рассчитать процент
-//        for (int i = 0; i < incomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < incomeCategories.size(); k++) {
-//                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            incCatCount.add(c);
-//        }
-//        for (int i = 0; i < outcomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < outcomeCategories.size(); k++) {
-//                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            outcCatCount.add(c);
-//        }
-        //->
+
         for (int i = 0; i < incomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < incomeCategories.size(); k++) {
@@ -369,8 +345,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             incCatVal.add(c);
         }
-        //<-
-        //->
+
         for (int i = 0; i < outcomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < outcomeCategories.size(); k++) {
@@ -380,33 +355,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             outcCatVal.add(c);
         }
-        //<-
-//        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-//        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfIncomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfOutcomeCat = new ArrayList<>();
-//        int totalInCat = 0;
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            totalInCat += incCatCount.get(i);
-//        }
-//        int totalOutCat = 0;
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            totalOutCat += outcCatCount.get(i);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-//            percentOfIncomeCat.add(perc);
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-//            percentOfOutcomeCat.add(perc);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-//        }
         sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
         String cc = sharedPreferences.getString(currencyKey, "rub");
         String c1 = "";
@@ -430,8 +378,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         tvTotalIncome.setText("" + incSum + c1);
         tvTotalOutcomr.setText("" + outcSum + c1);
         tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-//        tvIncCateg.setText("" + allInCatWithPercent);
-//        tvOutcCateg.setText("" + allOutCatWithPercent);
         tvInCategSum.setText("" + allInCatValueSum);
         tvOutCategSum.setText("" + allOutCatValueSum);
     }
@@ -519,35 +465,12 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
         Set<String> incomeCatSet = new HashSet<>(incomeCategories);
         ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-//        ArrayList<Integer> incCatCount = new ArrayList<>();
-//        ArrayList<Integer> outcCatCount = new ArrayList<>();
         ArrayList<Integer> incCatVal = new ArrayList<>();
         ArrayList<Integer> outcCatVal = new ArrayList<>();
-//        String allInCatWithPercent = "";
-//        String allOutCatWithPercent = "";
         String allInCatValueSum = "";
         String allOutCatValueSum = "";
         //двойной цикл для нахлждения количества повторяющихся категорий
         //чтобы в дальнейшем рассчитать процент
-//        for (int i = 0; i < incomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < incomeCategories.size(); k++) {
-//                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            incCatCount.add(c);
-//        }
-//        for (int i = 0; i < outcomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < outcomeCategories.size(); k++) {
-//                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            outcCatCount.add(c);
-//        }
-        //->
         for (int i = 0; i < incomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < incomeCategories.size(); k++) {
@@ -557,8 +480,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             incCatVal.add(c);
         }
-        //<-
-        //->
         for (int i = 0; i < outcomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < outcomeCategories.size(); k++) {
@@ -568,33 +489,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             outcCatVal.add(c);
         }
-        //<-
-//        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-//        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfIncomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfOutcomeCat = new ArrayList<>();
-//        int totalInCat = 0;
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            totalInCat += incCatCount.get(i);
-//        }
-//        int totalOutCat = 0;
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            totalOutCat += outcCatCount.get(i);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-//            percentOfIncomeCat.add(perc);
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-//            percentOfOutcomeCat.add(perc);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-//        }
         sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
         String cc = sharedPreferences.getString(currencyKey, "rub");
         String c1 = "";
@@ -618,8 +512,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         tvTotalIncome.setText("" + incSum + c1);
         tvTotalOutcomr.setText("" + outcSum + c1);
         tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-//        tvIncCateg.setText("" + allInCatWithPercent);
-//        tvOutcCateg.setText("" + allOutCatWithPercent);
         tvInCategSum.setText("" + allInCatValueSum);
         tvOutCategSum.setText("" + allOutCatValueSum);
     }
@@ -688,35 +580,12 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
         Set<String> incomeCatSet = new HashSet<>(incomeCategories);
         ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-        //        ArrayList<Integer> incCatCount = new ArrayList<>();
-//        ArrayList<Integer> outcCatCount = new ArrayList<>();
         ArrayList<Integer> incCatVal = new ArrayList<>();
         ArrayList<Integer> outcCatVal = new ArrayList<>();
-//        String allInCatWithPercent = "";
-//        String allOutCatWithPercent = "";
         String allInCatValueSum = "";
         String allOutCatValueSum = "";
         //двойной цикл для нахлждения количества повторяющихся категорий
         //чтобы в дальнейшем рассчитать процент
-//        for (int i = 0; i < incomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < incomeCategories.size(); k++) {
-//                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            incCatCount.add(c);
-//        }
-//        for (int i = 0; i < outcomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < outcomeCategories.size(); k++) {
-//                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            outcCatCount.add(c);
-//        }
-        //->
         for (int i = 0; i < incomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < incomeCategories.size(); k++) {
@@ -726,8 +595,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             incCatVal.add(c);
         }
-        //<-
-        //->
         for (int i = 0; i < outcomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < outcomeCategories.size(); k++) {
@@ -737,33 +604,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             outcCatVal.add(c);
         }
-        //<-
-//        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-//        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfIncomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfOutcomeCat = new ArrayList<>();
-//        int totalInCat = 0;
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            totalInCat += incCatCount.get(i);
-//        }
-//        int totalOutCat = 0;
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            totalOutCat += outcCatCount.get(i);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-//            percentOfIncomeCat.add(perc);
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-//            percentOfOutcomeCat.add(perc);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-//        }
         sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
         String cc = sharedPreferences.getString(currencyKey, "rub");
         String c1 = "";
@@ -787,8 +627,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         tvTotalIncome.setText("" + incSum + c1);
         tvTotalOutcomr.setText("" + outcSum + c1);
         tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-//        tvIncCateg.setText("" + allInCatWithPercent);
-//        tvOutcCateg.setText("" + allOutCatWithPercent);
         tvInCategSum.setText("" + allInCatValueSum);
         tvOutCategSum.setText("" + allOutCatValueSum);
 
@@ -851,35 +689,10 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         ArrayList<String> outcomeCatSetToArray = new ArrayList<>(outcomeCatSet);
         Set<String> incomeCatSet = new HashSet<>(incomeCategories);
         ArrayList<String> incomeCatSetToArray = new ArrayList<>(incomeCatSet);
-        //        ArrayList<Integer> incCatCount = new ArrayList<>();
-//        ArrayList<Integer> outcCatCount = new ArrayList<>();
         ArrayList<Integer> incCatVal = new ArrayList<>();
         ArrayList<Integer> outcCatVal = new ArrayList<>();
-//        String allInCatWithPercent = "";
-//        String allOutCatWithPercent = "";
         String allInCatValueSum = "";
         String allOutCatValueSum = "";
-        //двойной цикл для нахлждения количества повторяющихся категорий
-        //чтобы в дальнейшем рассчитать процент
-//        for (int i = 0; i < incomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < incomeCategories.size(); k++) {
-//                if (incomeCatSetToArray.get(i).equals(incomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            incCatCount.add(c);
-//        }
-//        for (int i = 0; i < outcomeCatSet.size(); i++) {
-//            int c = 0;
-//            for (int k = 0; k < outcomeCategories.size(); k++) {
-//                if (outcomeCatSetToArray.get(i).equals(outcomeCategories.get(k))) {
-//                    c++;
-//                }
-//            }
-//            outcCatCount.add(c);
-//        }
-        //->
         for (int i = 0; i < incomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < incomeCategories.size(); k++) {
@@ -889,8 +702,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             incCatVal.add(c);
         }
-        //<-
-        //->
         for (int i = 0; i < outcomeCatSet.size(); i++) {
             int c = 0;
             for (int k = 0; k < outcomeCategories.size(); k++) {
@@ -900,33 +711,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             }
             outcCatVal.add(c);
         }
-        //<-
-//        ArrayList<Double> percentOfIncomeCat = new ArrayList<>();
-//        ArrayList<Double> percentOfOutcomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfIncomeCat = new ArrayList<>();
-//        ArrayList<Integer> valueSumOfOutcomeCat = new ArrayList<>();
-//        int totalInCat = 0;
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            totalInCat += incCatCount.get(i);
-//        }
-//        int totalOutCat = 0;
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            totalOutCat += outcCatCount.get(i);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            double perc = (double) incCatCount.get(i) / totalInCat * 100.0;
-//            percentOfIncomeCat.add(perc);
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            double perc = (double) outcCatCount.get(i) / totalOutCat * 100.0;
-//            percentOfOutcomeCat.add(perc);
-//        }
-//        for (int i = 0; i < incomeCatSetToArray.size(); i++) {
-//            allInCatWithPercent += incomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfIncomeCat.get(i)) + "%" + "\n";
-//        }
-//        for (int i = 0; i < outcomeCatSetToArray.size(); i++) {
-//            allOutCatWithPercent += outcomeCatSetToArray.get(i) + " " + String.format("%.2f", percentOfOutcomeCat.get(i)) + "%" + "\n";
-//        }
         sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
         String cc = sharedPreferences.getString(currencyKey, "rub");
         String c1 = "";
@@ -950,8 +734,6 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         tvTotalIncome.setText("" + incSum + c1);
         tvTotalOutcomr.setText("" + outcSum + c1);
         tvDelPercent.setText("" + String.format("%.2f", percent) + "%");
-//        tvIncCateg.setText("" + allInCatWithPercent);
-//        tvOutcCateg.setText("" + allOutCatWithPercent);
         tvInCategSum.setText("" + allInCatValueSum);
         tvOutCategSum.setText("" + allOutCatValueSum);
     }

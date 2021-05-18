@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -20,13 +19,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -56,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     Toolbar toolbar;
 
     RecyclerView recyclerView;
-    TextView balance, currency;
+    TextView balance, currency, chosenLimit, chosenLimitValue, restType, restTypeValue;
     FloatingActionButton fab;
     ArrayList<Element> elements;
     static boolean outcome, income;
@@ -115,6 +108,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(this);
         linearLayout = findViewById(R.id.linearLayout);
         linearLayout.setOnClickListener(this);
+        chosenLimit = findViewById(R.id.limit_type_choosen);
+        chosenLimitValue = findViewById(R.id.limit_value_choosen);
+        restType = findViewById(R.id.rest_type);
+        restTypeValue = findViewById(R.id.rest_type_value);
         spinIn = "";
         spinOut = "";
         spinner = findViewById(R.id.spinner);
@@ -133,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         updateUI();
                         loadBalance();
                         updBalCur();
+                        showLimit();
                         break;
                     case 1:
                         currentAccount = names[1];
@@ -141,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         updateUI();
                         loadBalance();
                         updBalCur();
+                        showLimit();
                         break;
                     case 2:
                         currentAccount = names[2];
@@ -149,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         updateUI();
                         loadBalance();
                         updBalCur();
+                        showLimit();
                         break;
                 }
             }
@@ -161,8 +161,267 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dbHelper = new DBHelper(this);
         dbHelper1 = new DBHelper1(this);
         dbHelper2 = new DBHelper2(this);
+        showLimit();
         init();
         updateAccount();
+    }
+
+
+    private void showLimit(){
+        boolean f;
+        SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.ACCOUNT_FILE, Context.MODE_PRIVATE);
+        String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
+        switch (curAc) {
+            case "Счёт 1": {
+                SharedPreferences preferences = getSharedPreferences(Limit.ACC1_FILE_IS_LIMIT_ACTIVE, Context.MODE_PRIVATE);
+                f = preferences.getBoolean(Limit.ACC1_LIMIT_STATUS, false);
+                if (f){
+                    SharedPreferences limTypePref = getSharedPreferences("acc1TypeFile", Context.MODE_PRIVATE);
+                    SharedPreferences limValPref = getSharedPreferences("acc1ValueFile", Context.MODE_PRIVATE);
+                    String type = limTypePref.getString("acc1Type", Limit.DAY_LIMIT);
+                    SharedPreferences sharedPreferences1 = getSharedPreferences(ACCOUNT_ONE_FILE, Context.MODE_PRIVATE);
+                    String cc = sharedPreferences1.getString(CURRENCY_KEY, "rub");
+                    String c1 = "";
+                    switch (cc) {
+                        case "rub":
+                            c1 = getString(R.string.ruble);
+                            break;
+                        case "euro":
+                            c1 = getString(R.string.euro);
+                            break;
+                        case "dollar":
+                            c1 = getString(R.string.dollar);
+                            break;
+                    }
+                    String typeS = "";
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            break;
+                        case Limit._2_WEEKS_LIMIT:
+                            typeS = "Лимит на 2 недели: ";
+                            restType.setText("Остаток на 2 недели: ");
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            break;
+                    }
+                    int val = limValPref.getInt("acc1Value", 0);
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
+                    Calendar c = new GregorianCalendar();
+                    int y = c.get(Calendar.YEAR);
+                    int m = c.get(Calendar.MONTH) + 1;
+                    int d = c.get(Calendar.DAY_OF_MONTH);
+                    String currentDate = d + "." + m + "." + y;
+                    ArrayList<String> values = new ArrayList<>();
+                    DBHelper dbHelper = new DBHelper(this);
+                    SQLiteDatabase db = dbHelper.getReadableDatabase();
+                    Cursor cursor = db.rawQuery("SELECT " + InputData.TaskEntry.VALUE + " FROM " + InputData.TaskEntry.TABLE + " WHERE " + InputData.TaskEntry.OPERATION + " = '2131165294' AND " + InputData.TaskEntry.DATE + " = '" + currentDate + "';", null);
+                    if (!(cursor.getCount() <= 0)) {
+                        if (cursor.moveToFirst()) {
+                            do {
+                                values.add(cursor.getString(cursor.getColumnIndex(InputData.TaskEntry.VALUE)));
+                            } while (cursor.moveToNext());
+                        }
+                    }
+                    cursor.close();
+                    db.close();
+                    int restVal = 0;
+                    for (int i = 0; i < values.size(); i++){
+                        restVal += Integer.parseInt(values.get(i));
+                    }
+                    int res = val - restVal;
+                    restType.setTextSize(14);
+                    restTypeValue.setText("" + res + c1);
+                    restTypeValue.setTextSize(14);
+                } else {
+                    chosenLimit.setText("");
+                    chosenLimit.setTextSize(1);
+                    chosenLimitValue.setText("");
+                    chosenLimitValue.setTextSize(1);
+                    restType.setText("");
+                    restType.setTextSize(1);
+                    restTypeValue.setText("");
+                    restTypeValue.setTextSize(1);
+                }
+                break;
+            }
+            case "Счёт 2": {
+                SharedPreferences preferences = getSharedPreferences(Limit.ACC2_FILE_IS_LIMIT_ACTIVE, Context.MODE_PRIVATE);
+                f = preferences.getBoolean(Limit.ACC2_LIMIT_STATUS, false);
+                if (f){
+                    SharedPreferences limTypePref = getSharedPreferences("acc2TypeFile", Context.MODE_PRIVATE);
+                    SharedPreferences limValPref = getSharedPreferences("acc2ValueFile", Context.MODE_PRIVATE);
+                    String type = limTypePref.getString("acc2Type", Limit.DAY_LIMIT);
+                    SharedPreferences sharedPreferences1 = getSharedPreferences(ACCOUNT_TWO_FILE, Context.MODE_PRIVATE);
+                    String cc = sharedPreferences1.getString(CURRENCY_KEY, "rub");
+                    String c1 = "";
+                    switch (cc) {
+                        case "rub":
+                            c1 = getString(R.string.ruble);
+                            break;
+                        case "euro":
+                            c1 = getString(R.string.euro);
+                            break;
+                        case "dollar":
+                            c1 = getString(R.string.dollar);
+                            break;
+                    }
+                    String typeS = "";
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            break;
+                        case Limit._2_WEEKS_LIMIT:
+                            typeS = "Лимит на 2 недели: ";
+                            restType.setText("Остаток на 2 недели: ");
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            break;
+                    }
+                    int val = limValPref.getInt("acc2Value", 0);
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
+                    Calendar c = new GregorianCalendar();
+                    int y = c.get(Calendar.YEAR);
+                    int m = c.get(Calendar.MONTH) + 1;
+                    int d = c.get(Calendar.DAY_OF_MONTH);
+                    String currentDate = d + "." + m + "." + y;
+                    ArrayList<String> values = new ArrayList<>();
+                    DBHelper1 dbHelper1 = new DBHelper1(this);
+                    SQLiteDatabase db = dbHelper1.getReadableDatabase();
+                    Cursor cursor = db.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + " FROM " + InputData1.TaskEntry1.TABLE1 + " WHERE " + InputData1.TaskEntry1.OPERATION1 + " = '2131165294' AND " + InputData1.TaskEntry1.DATE1 + " = '" + currentDate + "';", null);
+                    if (!(cursor.getCount() <= 0)) {
+                        if (cursor.moveToFirst()) {
+                            do {
+                                values.add(cursor.getString(cursor.getColumnIndex(InputData1.TaskEntry1.VALUE1)));
+                            } while (cursor.moveToNext());
+                        }
+                    }
+                    cursor.close();
+                    db.close();
+                    int restVal = 0;
+                    for (int i = 0; i < values.size(); i++){
+                        restVal += Integer.parseInt(values.get(i));
+                    }
+                    int res = val - restVal;
+                    restType.setTextSize(14);
+                    restTypeValue.setText("" + res + c1);
+                    restTypeValue.setTextSize(14);
+                } else {
+                    chosenLimit.setText("");
+                    chosenLimit.setTextSize(1);
+                    chosenLimitValue.setText("");
+                    chosenLimitValue.setTextSize(1);
+                    restType.setText("");
+                    restType.setTextSize(1);
+                    restTypeValue.setText("");
+                    restTypeValue.setTextSize(1);
+                }
+                break;
+            }
+            case "Счёт 3": {
+                SharedPreferences preferences = getSharedPreferences(Limit.ACC3_FILE_IS_LIMIT_ACTIVE, Context.MODE_PRIVATE);
+                f = preferences.getBoolean(Limit.ACC3_LIMIT_STATUS, false);
+                if (f){
+                    SharedPreferences limTypePref = getSharedPreferences("acc3TypeFile", Context.MODE_PRIVATE);
+                    SharedPreferences limValPref = getSharedPreferences("acc3ValueFile", Context.MODE_PRIVATE);
+                    String type = limTypePref.getString("acc3Type", Limit.DAY_LIMIT);
+                    SharedPreferences sharedPreferences1 = getSharedPreferences(ACCOUNT_THREE_FILE, Context.MODE_PRIVATE);
+                    String cc = sharedPreferences1.getString(CURRENCY_KEY, "rub");
+                    String c1 = "";
+                    switch (cc) {
+                        case "rub":
+                            c1 = getString(R.string.ruble);
+                            break;
+                        case "euro":
+                            c1 = getString(R.string.euro);
+                            break;
+                        case "dollar":
+                            c1 = getString(R.string.dollar);
+                            break;
+                    }
+                    String typeS = "";
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            break;
+                        case Limit._2_WEEKS_LIMIT:
+                            typeS = "Лимит на 2 недели: ";
+                            restType.setText("Остаток на 2 недели: ");
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            break;
+                    }
+                    int val = limValPref.getInt("acc3Value", 0);
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
+                    Calendar c = new GregorianCalendar();
+                    int y = c.get(Calendar.YEAR);
+                    int m = c.get(Calendar.MONTH) + 1;
+                    int d = c.get(Calendar.DAY_OF_MONTH);
+                    String currentDate = d + "." + m + "." + y;
+                    ArrayList<String> values = new ArrayList<>();
+                    DBHelper2 dbHelper2 = new DBHelper2(this);
+                    SQLiteDatabase db = dbHelper2.getReadableDatabase();
+                    Cursor cursor = db.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + " FROM " + InputData2.TaskEntry2.TABLE2 + " WHERE " + InputData2.TaskEntry2.OPERATION2 + " = '2131165294' AND " + InputData2.TaskEntry2.DATE2+ " = '" + currentDate + "';", null);
+                    if (!(cursor.getCount() <= 0)) {
+                        if (cursor.moveToFirst()) {
+                            do {
+                                values.add(cursor.getString(cursor.getColumnIndex(InputData2.TaskEntry2.VALUE2)));
+                            } while (cursor.moveToNext());
+                        }
+                    }
+                    cursor.close();
+                    db.close();
+                    int restVal = 0;
+                    for (int i = 0; i < values.size(); i++){
+                        restVal += Integer.parseInt(values.get(i));
+                    }
+                    int res = val - restVal;
+                    restType.setTextSize(14);
+                    restTypeValue.setText("" + res + c1);
+                    restTypeValue.setTextSize(14);
+                } else {
+                    chosenLimit.setText("");
+                    chosenLimit.setTextSize(1);
+                    chosenLimitValue.setText("");
+                    chosenLimitValue.setTextSize(1);
+                    restType.setText("");
+                    restType.setTextSize(1);
+                    restTypeValue.setText("");
+                    restTypeValue.setTextSize(1);
+                }
+                break;
+            }
+        }
     }
 
     @Override
@@ -647,7 +906,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(DialogInterface dialog, int which) {
             }
         });
-        updateUI();
         AlertDialog dialog = builder.create();
         dialog.show();
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#37334c")));
@@ -853,6 +1111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             db.close();
 
         }
+        showLimit();
     }
 
     void deleteFromBase(int id){
