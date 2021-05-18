@@ -18,6 +18,11 @@
             android:icon="@drawable/ic_baseline_settings_24"
             android:title="Настройки"/>
 
+        <item
+            android:id="@+id/limit"
+            android:icon="@drawable/ic_baseline_gpp_maybe_24"
+            android:title="Лимит"/>
+
     </group>
 
 </menu>

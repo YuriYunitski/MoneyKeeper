@@ -51,6 +51,7 @@ public class OutcomeCategoryActivity extends AppCompatActivity implements View.O
         toolbar = findViewById(R.id.toolBarOutC);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setTitle("Расходы");
         lvOutcome = findViewById(R.id.lv_outcome);
         fab = findViewById(R.id.add_out_category);
@@ -58,6 +59,16 @@ public class OutcomeCategoryActivity extends AppCompatActivity implements View.O
         categoryOutcome = new CategoryOutcome(this);
         registerForContextMenu(lvOutcome);
         updateUI();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                this.finish();
+                break;
+        }
+        return true;
     }
 
     @Override

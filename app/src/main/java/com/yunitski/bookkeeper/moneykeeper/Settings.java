@@ -1,5 +1,6 @@
 package com.yunitski.bookkeeper.moneykeeper;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -12,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -39,6 +41,7 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
         toolbar = findViewById(R.id.toolBar3);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setTitle("Настройки");
         euroChecked = false;
         dollChecked = false;
@@ -102,6 +105,16 @@ public class Settings extends AppCompatActivity implements View.OnClickListener 
         } else if (cur.equals("dollar")){
             doll.setChecked(true);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                this.finish();
+                break;
+        }
+        return true;
     }
 
     @Override

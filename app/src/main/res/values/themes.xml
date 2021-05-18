@@ -53,4 +53,8 @@
     <style name="Theme.MoneyKeeper.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.MoneyKeeper.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="SwitchTheme" parent="Theme.AppCompat.Light">
+        <item name="android:colorControlActivated">#148E13</item>
+    </style>
+
 </resources>

@@ -302,6 +302,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.statistic){
 
             startActivity(new Intent(this, Statistic.class));
+        } else if (id == R.id.limit){
+            startActivity(new Intent(this, Limit.class));
         }
 
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);

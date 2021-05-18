@@ -48,6 +48,7 @@ public class IncomeCategoryActivity extends AppCompatActivity implements View.On
         toolbar = findViewById(R.id.toolBarInC);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setTitle("Доходы");
         lvIncome = findViewById(R.id.lv_income);
         fab = findViewById(R.id.add_in_category);
@@ -55,6 +56,16 @@ public class IncomeCategoryActivity extends AppCompatActivity implements View.On
         categoryIncome = new CategoryIncome(this);
         registerForContextMenu(lvIncome);
         updateUI();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                this.finish();
+                break;
+        }
+        return true;
     }
 
     @Override

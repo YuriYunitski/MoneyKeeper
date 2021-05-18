@@ -11,51 +11,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MoneyKeeper.NoActionBar">
+        <activity android:name=".Limit"></activity>
         <activity
             android:name=".IncomeCategoryActivity"
-            android:parentActivityName=".Settings"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MoneyKeeper.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".Settings" />
-        </activity>
+            android:theme="@style/Theme.MoneyKeeper.NoActionBar"></activity>
         <activity
             android:name=".OutcomeCategoryActivity"
-            android:parentActivityName=".Settings"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MoneyKeeper.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".Settings" />
-        </activity>
+            android:theme="@style/Theme.MoneyKeeper.NoActionBar"></activity>
         <activity
             android:name=".Settings"
-            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MoneyKeeper.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
+            android:theme="@style/Theme.MoneyKeeper.NoActionBar"></activity>
         <activity
             android:name=".Statistic"
-            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MoneyKeeper.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
+            android:theme="@style/Theme.MoneyKeeper.NoActionBar"></activity>
         <activity
             android:name=".Exchange"
-            android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.MoneyKeeper.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
+            android:theme="@style/Theme.MoneyKeeper.NoActionBar"></activity>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
