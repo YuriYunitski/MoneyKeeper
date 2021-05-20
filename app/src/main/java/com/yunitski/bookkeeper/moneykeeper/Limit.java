@@ -30,7 +30,6 @@ public class Limit extends AppCompatActivity implements View.OnClickListener {
     TextView currentLimitValue, currentLimitType;
     public static final String DAY_LIMIT = "dayLim";
     public static final String WEEK_LIMIT = "weekLim";
-    public static final String _2_WEEKS_LIMIT = "2weeksLim";
     public static final String MONTH_LIMIT = "monthLim";
     public static final String ACC1_FILE_IS_LIMIT_ACTIVE = "acc1FileIsLimitActive";
     public static final String ACC2_FILE_IS_LIMIT_ACTIVE = "acc2FileIsLimitActive";
@@ -95,9 +94,6 @@ public class Limit extends AppCompatActivity implements View.OnClickListener {
                 break;
             case WEEK_LIMIT:
                 currentLimitType.setText("Неделя");
-                break;
-            case _2_WEEKS_LIMIT:
-                currentLimitType.setText("2 недели");
                 break;
             case MONTH_LIMIT:
                 currentLimitType.setText("Месяц");
@@ -206,7 +202,6 @@ public class Limit extends AppCompatActivity implements View.OnClickListener {
         RadioGroup group = view.findViewById(R.id.radioGroup2);
         RadioButton dayRB = view.findViewById(R.id.rb_day);
         RadioButton weekRB = view.findViewById(R.id.rb_week);
-        RadioButton _2weeksRB = view.findViewById(R.id.rb_2_weeks);
         RadioButton monthRB = view.findViewById(R.id.rb_month);
         SharedPreferences limTypePref = getSharedPreferences(typeFile, Context.MODE_PRIVATE);
         SharedPreferences limValPref = getSharedPreferences(valueFile, Context.MODE_PRIVATE);
@@ -214,24 +209,15 @@ public class Limit extends AppCompatActivity implements View.OnClickListener {
         switch (curL) {
             case DAY_LIMIT:
                 weekRB.setChecked(false);
-                _2weeksRB.setChecked(false);
                 monthRB.setChecked(false);
                 dayRB.setChecked(true);
                 break;
             case WEEK_LIMIT:
-                _2weeksRB.setChecked(false);
                 monthRB.setChecked(false);
                 dayRB.setChecked(false);
                 weekRB.setChecked(true);
                 break;
-            case _2_WEEKS_LIMIT:
-                monthRB.setChecked(false);
-                dayRB.setChecked(false);
-                weekRB.setChecked(false);
-                _2weeksRB.setChecked(true);
-                break;
             case MONTH_LIMIT:
-                _2weeksRB.setChecked(false);
                 dayRB.setChecked(false);
                 weekRB.setChecked(false);
                 monthRB.setChecked(true);
@@ -245,8 +231,6 @@ public class Limit extends AppCompatActivity implements View.OnClickListener {
                     currentLimChoice[0] = DAY_LIMIT;
                 } else if(checkedId == R.id.rb_week){
                     currentLimChoice[0] = WEEK_LIMIT;
-                } else if(checkedId == R.id.rb_2_weeks){
-                    currentLimChoice[0] = _2_WEEKS_LIMIT;
                 } else if(checkedId == R.id.rb_month){
                     currentLimChoice[0] = MONTH_LIMIT;
                 }

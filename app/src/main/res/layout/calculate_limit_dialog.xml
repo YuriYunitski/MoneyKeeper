@@ -32,14 +32,6 @@
             android:textColor="@color/white" />
 
         <RadioButton
-            android:id="@+id/rb_2_weeks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="@color/white"
-            android:text="2 недели"
-            android:textColor="@color/white" />
-
-        <RadioButton
             android:id="@+id/rb_month"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

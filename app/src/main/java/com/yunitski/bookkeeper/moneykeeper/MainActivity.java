@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -74,8 +75,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     SharedPreferences sharedPreferences;
     Spinner spinner;
     ArrayAdapter<String> spinnerAdapter;
-    private Thread secThread;
-    private Runnable runnable;
     private String dollar, euro, belRub, pound, currentAccount, gryvan, tenge;
     int res;
     final String[] names = new String[] {"Счёт 1", "Счёт 2", "Счёт 3"};
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         setTitle(getString(R.string.events));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close);
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         spinIn = "";
         spinOut = "";
         spinner = findViewById(R.id.spinner);
-        spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, names);
+        spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_list_item_custom, R.id.text_spinner, names);
         spinner.setAdapter(spinnerAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -193,53 +192,121 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             c1 = getString(R.string.dollar);
                             break;
                     }
-                    String typeS = "";
-                    switch (type){
-                        case Limit.DAY_LIMIT:
-                            typeS = "Лимит на день: ";
-                            restType.setText("Остаток на день: ");
-                            break;
-                        case Limit.WEEK_LIMIT:
-                            typeS = "Лимит на неделю: ";
-                            restType.setText("Остаток на неделю: ");
-                            break;
-                        case Limit._2_WEEKS_LIMIT:
-                            typeS = "Лимит на 2 недели: ";
-                            restType.setText("Остаток на 2 недели: ");
-                            break;
-                        case Limit.MONTH_LIMIT:
-                            typeS = "Лимит на месяц: ";
-                            restType.setText("Остаток на месяц: ");
-                            break;
-                    }
+                    String currentDate = dateC();
+                    int res = 0;
                     int val = limValPref.getInt("acc1Value", 0);
-                    chosenLimit.setText(typeS);
-                    chosenLimit.setTextSize(14);
-                    chosenLimitValue.setText("" + val + c1);
-                    chosenLimitValue.setTextSize(14);
-                    Calendar c = new GregorianCalendar();
-                    int y = c.get(Calendar.YEAR);
-                    int m = c.get(Calendar.MONTH) + 1;
-                    int d = c.get(Calendar.DAY_OF_MONTH);
-                    String currentDate = d + "." + m + "." + y;
+                    int restVal = 0;
+                    String typeS = "";
+                    String[] currentDateSplit = currentDate.split("\\.");
+                    String currentDay = currentDateSplit[0];
+                    String currentMonth = currentDateSplit[1];
+                    String currentYear = currentDateSplit[2];
+                    Calendar calendar = Calendar.getInstance();
+                    //месяцы в calendar начинаются с 0, чтобы неделя определялась верно, надо отнять 1 от текущего месяца
+                    calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
+                    calendar.setMinimalDaysInFirstWeek(1);
+                    int wk = calendar.get(Calendar.WEEK_OF_MONTH);
                     ArrayList<String> values = new ArrayList<>();
+                    ArrayList<String> dates = new ArrayList<>();
+                    ArrayList<String> daysInBase = new ArrayList<>();
+                    ArrayList<String> yearsInBase = new ArrayList<>();
+                    ArrayList<String> monthsInBase = new ArrayList<>();
+                    ArrayList<Integer> weeksInBase = new ArrayList<>();
                     DBHelper dbHelper = new DBHelper(this);
                     SQLiteDatabase db = dbHelper.getReadableDatabase();
-                    Cursor cursor = db.rawQuery("SELECT " + InputData.TaskEntry.VALUE + " FROM " + InputData.TaskEntry.TABLE + " WHERE " + InputData.TaskEntry.OPERATION + " = '2131165294' AND " + InputData.TaskEntry.DATE + " = '" + currentDate + "';", null);
+                    Cursor cursor = db.rawQuery("SELECT " + InputData.TaskEntry.VALUE + ", " + InputData.TaskEntry.DATE + " FROM " + InputData.TaskEntry.TABLE + " WHERE " + InputData.TaskEntry.OPERATION + " = '2131165294';", null);
                     if (!(cursor.getCount() <= 0)) {
                         if (cursor.moveToFirst()) {
                             do {
                                 values.add(cursor.getString(cursor.getColumnIndex(InputData.TaskEntry.VALUE)));
+                                dates.add(cursor.getString(cursor.getColumnIndex(InputData.TaskEntry.DATE)));
                             } while (cursor.moveToNext());
                         }
                     }
                     cursor.close();
                     db.close();
-                    int restVal = 0;
-                    for (int i = 0; i < values.size(); i++){
-                        restVal += Integer.parseInt(values.get(i));
+                    ArrayList<String> currentValues = new ArrayList<>();
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                daysInBase.add(currentDateToSplit[0]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (daysInBase.get(i).equals(currentDay) && monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                Calendar calendar1 = Calendar.getInstance();
+                                calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
+                                calendar1.setMinimalDaysInFirstWeek(1);
+                                int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
+                                weeksInBase.add(wk1);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear) && weeksInBase.get(i).equals(wk)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
                     }
-                    int res = val - restVal;
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
                     restType.setTextSize(14);
                     restTypeValue.setText("" + res + c1);
                     restTypeValue.setTextSize(14);
@@ -276,53 +343,121 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             c1 = getString(R.string.dollar);
                             break;
                     }
-                    String typeS = "";
-                    switch (type){
-                        case Limit.DAY_LIMIT:
-                            typeS = "Лимит на день: ";
-                            restType.setText("Остаток на день: ");
-                            break;
-                        case Limit.WEEK_LIMIT:
-                            typeS = "Лимит на неделю: ";
-                            restType.setText("Остаток на неделю: ");
-                            break;
-                        case Limit._2_WEEKS_LIMIT:
-                            typeS = "Лимит на 2 недели: ";
-                            restType.setText("Остаток на 2 недели: ");
-                            break;
-                        case Limit.MONTH_LIMIT:
-                            typeS = "Лимит на месяц: ";
-                            restType.setText("Остаток на месяц: ");
-                            break;
-                    }
+                    String currentDate = dateC();
+                    int res = 0;
                     int val = limValPref.getInt("acc2Value", 0);
-                    chosenLimit.setText(typeS);
-                    chosenLimit.setTextSize(14);
-                    chosenLimitValue.setText("" + val + c1);
-                    chosenLimitValue.setTextSize(14);
-                    Calendar c = new GregorianCalendar();
-                    int y = c.get(Calendar.YEAR);
-                    int m = c.get(Calendar.MONTH) + 1;
-                    int d = c.get(Calendar.DAY_OF_MONTH);
-                    String currentDate = d + "." + m + "." + y;
+                    int restVal = 0;
+                    String typeS = "";
+                    String[] currentDateSplit = currentDate.split("\\.");
+                    String currentDay = currentDateSplit[0];
+                    String currentMonth = currentDateSplit[1];
+                    String currentYear = currentDateSplit[2];
+                    Calendar calendar = Calendar.getInstance();
+                    //месяцы в calendar начинаются с 0, чтобы неделя определялась верно, надо отнять 1 от текущего месяца
+                    calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
+                    calendar.setMinimalDaysInFirstWeek(1);
+                    int wk = calendar.get(Calendar.WEEK_OF_MONTH);
                     ArrayList<String> values = new ArrayList<>();
+                    ArrayList<String> dates = new ArrayList<>();
+                    ArrayList<String> daysInBase = new ArrayList<>();
+                    ArrayList<String> yearsInBase = new ArrayList<>();
+                    ArrayList<String> monthsInBase = new ArrayList<>();
+                    ArrayList<Integer> weeksInBase = new ArrayList<>();
                     DBHelper1 dbHelper1 = new DBHelper1(this);
                     SQLiteDatabase db = dbHelper1.getReadableDatabase();
-                    Cursor cursor = db.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + " FROM " + InputData1.TaskEntry1.TABLE1 + " WHERE " + InputData1.TaskEntry1.OPERATION1 + " = '2131165294' AND " + InputData1.TaskEntry1.DATE1 + " = '" + currentDate + "';", null);
+                    Cursor cursor = db.rawQuery("SELECT " + InputData1.TaskEntry1.VALUE1 + ", " + InputData1.TaskEntry1.DATE1 + " FROM " + InputData1.TaskEntry1.TABLE1 + " WHERE " + InputData1.TaskEntry1.OPERATION1 + " = '2131165294';", null);
                     if (!(cursor.getCount() <= 0)) {
                         if (cursor.moveToFirst()) {
                             do {
                                 values.add(cursor.getString(cursor.getColumnIndex(InputData1.TaskEntry1.VALUE1)));
+                                dates.add(cursor.getString(cursor.getColumnIndex(InputData1.TaskEntry1.DATE1)));
                             } while (cursor.moveToNext());
                         }
                     }
                     cursor.close();
                     db.close();
-                    int restVal = 0;
-                    for (int i = 0; i < values.size(); i++){
-                        restVal += Integer.parseInt(values.get(i));
+                    ArrayList<String> currentValues = new ArrayList<>();
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                daysInBase.add(currentDateToSplit[0]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (daysInBase.get(i).equals(currentDay) && monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                Calendar calendar1 = Calendar.getInstance();
+                                calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
+                                calendar1.setMinimalDaysInFirstWeek(1);
+                                int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
+                                weeksInBase.add(wk1);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear) && weeksInBase.get(i).equals(wk)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
                     }
-                    int res = val - restVal;
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
                     restType.setTextSize(14);
                     restTypeValue.setText("" + res + c1);
                     restTypeValue.setTextSize(14);
@@ -359,53 +494,122 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             c1 = getString(R.string.dollar);
                             break;
                     }
-                    String typeS = "";
-                    switch (type){
-                        case Limit.DAY_LIMIT:
-                            typeS = "Лимит на день: ";
-                            restType.setText("Остаток на день: ");
-                            break;
-                        case Limit.WEEK_LIMIT:
-                            typeS = "Лимит на неделю: ";
-                            restType.setText("Остаток на неделю: ");
-                            break;
-                        case Limit._2_WEEKS_LIMIT:
-                            typeS = "Лимит на 2 недели: ";
-                            restType.setText("Остаток на 2 недели: ");
-                            break;
-                        case Limit.MONTH_LIMIT:
-                            typeS = "Лимит на месяц: ";
-                            restType.setText("Остаток на месяц: ");
-                            break;
-                    }
+                    String currentDate = dateC();
+                    int res = 0;
                     int val = limValPref.getInt("acc3Value", 0);
-                    chosenLimit.setText(typeS);
-                    chosenLimit.setTextSize(14);
-                    chosenLimitValue.setText("" + val + c1);
-                    chosenLimitValue.setTextSize(14);
-                    Calendar c = new GregorianCalendar();
-                    int y = c.get(Calendar.YEAR);
-                    int m = c.get(Calendar.MONTH) + 1;
-                    int d = c.get(Calendar.DAY_OF_MONTH);
-                    String currentDate = d + "." + m + "." + y;
+                    int restVal = 0;
+                    String typeS = "";
+                    String[] currentDateSplit = currentDate.split("\\.");
+                    String currentDay = currentDateSplit[0];
+                    String currentMonth = currentDateSplit[1];
+                    String currentYear = currentDateSplit[2];
+                    Calendar calendar = Calendar.getInstance();
+                    //месяцы в calendar начинаются с 0, чтобы неделя определялась верно, надо отнять 1 от текущего месяца
+                    calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
+                    calendar.setMinimalDaysInFirstWeek(1);
+                    int wk = calendar.get(Calendar.WEEK_OF_MONTH);
                     ArrayList<String> values = new ArrayList<>();
+                    ArrayList<String> dates = new ArrayList<>();
+                    ArrayList<String> daysInBase = new ArrayList<>();
+                    ArrayList<String> yearsInBase = new ArrayList<>();
+                    ArrayList<String> monthsInBase = new ArrayList<>();
+                    ArrayList<Integer> weeksInBase = new ArrayList<>();
                     DBHelper2 dbHelper2 = new DBHelper2(this);
                     SQLiteDatabase db = dbHelper2.getReadableDatabase();
-                    Cursor cursor = db.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + " FROM " + InputData2.TaskEntry2.TABLE2 + " WHERE " + InputData2.TaskEntry2.OPERATION2 + " = '2131165294' AND " + InputData2.TaskEntry2.DATE2+ " = '" + currentDate + "';", null);
+                    Cursor cursor = db.rawQuery("SELECT " + InputData2.TaskEntry2.VALUE2 + ", " + InputData2.TaskEntry2.DATE2 + " FROM " + InputData2.TaskEntry2.TABLE2 + " WHERE " + InputData2.TaskEntry2.OPERATION2 + " = '2131165294';", null);
                     if (!(cursor.getCount() <= 0)) {
                         if (cursor.moveToFirst()) {
                             do {
                                 values.add(cursor.getString(cursor.getColumnIndex(InputData2.TaskEntry2.VALUE2)));
+                                dates.add(cursor.getString(cursor.getColumnIndex(InputData2.TaskEntry2.DATE2)));
                             } while (cursor.moveToNext());
                         }
                     }
                     cursor.close();
                     db.close();
-                    int restVal = 0;
-                    for (int i = 0; i < values.size(); i++){
-                        restVal += Integer.parseInt(values.get(i));
+                    ArrayList<String> currentValues = new ArrayList<>();
+                    switch (type){
+                        case Limit.DAY_LIMIT:
+                            typeS = "Лимит на день: ";
+                            restType.setText("Остаток на день: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                daysInBase.add(currentDateToSplit[0]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (daysInBase.get(i).equals(currentDay) && monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.WEEK_LIMIT:
+                            typeS = "Лимит на неделю: ";
+                            restType.setText("Остаток на неделю: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                Calendar calendar1 = Calendar.getInstance();
+                                calendar1.set(Integer.parseInt(currentDateToSplit[2]), Integer.parseInt(currentDateToSplit[1]) - 1, Integer.parseInt(currentDateToSplit[0]));
+                                calendar1.setMinimalDaysInFirstWeek(1);
+                                int wk1 = calendar1.get(Calendar.WEEK_OF_MONTH);
+                                weeksInBase.add(wk1);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear) && weeksInBase.get(i).equals(wk)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
+                        case Limit.MONTH_LIMIT:
+                            typeS = "Лимит на месяц: ";
+                            restType.setText("Остаток на месяц: ");
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                yearsInBase.add(currentDateToSplit[2]);
+                            }
+                            for (int i = 0; i < dates.size(); i++) {
+                                String[] currentDateToSplit = dates.get(i).split("\\.");
+                                monthsInBase.add(currentDateToSplit[1]);
+                            }
+                            for (int i = 0; i< dates.size(); i++){
+                                if (monthsInBase.get(i).equals(currentMonth) && yearsInBase.get(i).equals(currentYear)){
+                                    currentValues.add(values.get(i));
+                                }
+                            }
+                            for (int i = 0; i < currentValues.size(); i++){
+                                restVal += Integer.parseInt(currentValues.get(i));
+                            }
+                            res = val - restVal;
+                            break;
                     }
-                    int res = val - restVal;
+
+                    chosenLimit.setText(typeS);
+                    chosenLimit.setTextSize(14);
+                    chosenLimitValue.setText("" + val + c1);
+                    chosenLimitValue.setTextSize(14);
                     restType.setTextSize(14);
                     restTypeValue.setText("" + res + c1);
                     restTypeValue.setTextSize(14);
@@ -632,13 +836,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void init(){
-        runnable = new Runnable() {
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 getWeb();
             }
         };
-        secThread = new Thread(runnable);
+        Thread secThread = new Thread(runnable);
         secThread.start();
     }
 
@@ -706,11 +910,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SQLiteDatabase database = categoryIncome.getReadableDatabase();
         Cursor cursor = database.query(CategoryIncome.CatInEntry.TABLECI, new String[]{CategoryIncome.CatInEntry._ID, CategoryIncome.CatInEntry.IN_CATEGORY}, null, null, null, null, null);
         while (cursor.moveToNext()){
-            int idx = cursor.getColumnIndex(CategoryIncome.CatInEntry._ID);
             int idxC = cursor.getColumnIndex(CategoryIncome.CatInEntry.IN_CATEGORY);
             inList.add(cursor.getString(idxC));
         }
-            spinnerInAdapter = new ArrayAdapter<String>(this, R.layout.spinner_cat, R.id.tv_spin_cat, inList);
+            spinnerInAdapter = new ArrayAdapter<>(this, R.layout.spinner_cat, R.id.tv_spin_cat, inList);
             spinnerIn.setAdapter(spinnerInAdapter);
 
         cursor.close();
@@ -720,11 +923,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SQLiteDatabase database1 = categoryOutcome.getReadableDatabase();
         Cursor cursor1 = database1.query(CategoryOutcome.CatEntry.TABLEC, new String[]{CategoryOutcome.CatEntry._ID, CategoryOutcome.CatEntry.OUT_CATEGORY}, null, null, null, null, null);
         while (cursor1.moveToNext()){
-            int idx = cursor1.getColumnIndex(CategoryOutcome.CatEntry._ID);
             int idxC = cursor1.getColumnIndex(CategoryOutcome.CatEntry.OUT_CATEGORY);
             outList.add(cursor1.getString(idxC));
         }
-            spinnerOutAdapter = new ArrayAdapter<String>(this, R.layout.spinner_cat, R.id.tv_spin_cat, outList);
+            spinnerOutAdapter = new ArrayAdapter<>(this, R.layout.spinner_cat, R.id.tv_spin_cat, outList);
             spinnerOut.setAdapter(spinnerOutAdapter);
 
         cursor1.close();
@@ -752,159 +954,149 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         radioGroup = view.findViewById(R.id.radioGroup);
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.income) {
-                    income = true;
-                    outcome = false;
-                } else if (checkedId == R.id.outcome) {
-                    income = false;
-                    outcome = true;
-                }
+        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.income) {
+                income = true;
+                outcome = false;
+            } else if (checkedId == R.id.outcome) {
+                income = false;
+                outcome = true;
             }
-
         });
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
-                currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
+        builder.setPositiveButton("ok", (dialog, which) -> {
+            sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+            currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
-                if (currentAccount.equals(names[0])) {
-                    if (income) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_up_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal + i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper.getWritableDatabase();
-                            cv.put(InputData.TaskEntry.VALUE, i);
-                            cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
-                            cv.put(InputData.TaskEntry.DATE, dateC());
-                            cv.put(InputData.TaskEntry.OPERATION, res);
-                            cv.put(InputData.TaskEntry.CATEGORY, spinIn);
-                            db.insert(InputData.TaskEntry.TABLE, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else if (outcome) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_down_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal - i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper.getWritableDatabase();
-                            cv.put(InputData.TaskEntry.VALUE, i);
-                            cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
-                            cv.put(InputData.TaskEntry.DATE, dateC());
-                            cv.put(InputData.TaskEntry.OPERATION, res);
-                            cv.put(InputData.TaskEntry.CATEGORY, spinOut);
-                            db.insert(InputData.TaskEntry.TABLE, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+            if (currentAccount.equals(names[0])) {
+                if (income) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_up_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal + i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+                        cv.put(InputData.TaskEntry.VALUE, i);
+                        cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
+                        cv.put(InputData.TaskEntry.DATE, dateC());
+                        cv.put(InputData.TaskEntry.OPERATION, res);
+                        cv.put(InputData.TaskEntry.CATEGORY, spinIn);
+                        db.insert(InputData.TaskEntry.TABLE, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
                     }
-                } else if (currentAccount.equals(names[1])){
-                    if (income) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_up_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal + i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper1.getWritableDatabase();
-                            cv.put(InputData1.TaskEntry1.VALUE1, i);
-                            cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
-                            cv.put(InputData1.TaskEntry1.DATE1, dateC());
-                            cv.put(InputData1.TaskEntry1.OPERATION1, res);
-                            cv.put(InputData1.TaskEntry1.CATEGORY1, spinIn);
-                            db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else if (outcome) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_down_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal - i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper1.getWritableDatabase();
-                            cv.put(InputData1.TaskEntry1.VALUE1, i);
-                            cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
-                            cv.put(InputData1.TaskEntry1.DATE1, dateC());
-                            cv.put(InputData1.TaskEntry1.OPERATION1, res);
-                            cv.put(InputData1.TaskEntry1.CATEGORY1, spinOut);
-                            db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                } else if (outcome) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_down_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal - i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+                        cv.put(InputData.TaskEntry.VALUE, i);
+                        cv.put(InputData.TaskEntry.TOTAL_VALUE, bal);
+                        cv.put(InputData.TaskEntry.DATE, dateC());
+                        cv.put(InputData.TaskEntry.OPERATION, res);
+                        cv.put(InputData.TaskEntry.CATEGORY, spinOut);
+                        db.insert(InputData.TaskEntry.TABLE, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
                     }
-                } else if (currentAccount.equals(names[2])){
-                    if (income) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_up_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal + i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper2.getWritableDatabase();
-                            cv.put(InputData2.TaskEntry2.VALUE2, i);
-                            cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
-                            cv.put(InputData2.TaskEntry2.DATE2, dateC());
-                            cv.put(InputData2.TaskEntry2.OPERATION2, res);
-                            cv.put(InputData2.TaskEntry2.CATEGORY2, spinIn);
-                            db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else if (outcome) {
-                        if (!inpValueET.getText().toString().isEmpty()) {
-                            res = R.drawable.ic_baseline_arrow_drop_down_24;
-                            int i = Integer.parseInt(inpValueET.getText().toString());
-                            int bal = Integer.parseInt(balance.getText().toString());
-                            int k = bal - i;
-                            balance.setText("" + k);
-                            ContentValues cv = new ContentValues();
-                            SQLiteDatabase db = dbHelper2.getWritableDatabase();
-                            cv.put(InputData2.TaskEntry2.VALUE2, i);
-                            cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
-                            cv.put(InputData2.TaskEntry2.DATE2, dateC());
-                            cv.put(InputData2.TaskEntry2.OPERATION2, res);
-                            cv.put(InputData2.TaskEntry2.CATEGORY2, spinOut);
-                            db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
-                            db.close();
-                            saveBalance();
-                            updateUI();
-                        }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                }
+            } else if (currentAccount.equals(names[1])){
+                if (income) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_up_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal + i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper1.getWritableDatabase();
+                        cv.put(InputData1.TaskEntry1.VALUE1, i);
+                        cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
+                        cv.put(InputData1.TaskEntry1.DATE1, dateC());
+                        cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                        cv.put(InputData1.TaskEntry1.CATEGORY1, spinIn);
+                        db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
                     }
+                } else if (outcome) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_down_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal - i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper1.getWritableDatabase();
+                        cv.put(InputData1.TaskEntry1.VALUE1, i);
+                        cv.put(InputData1.TaskEntry1.TOTAL_VALUE1, bal);
+                        cv.put(InputData1.TaskEntry1.DATE1, dateC());
+                        cv.put(InputData1.TaskEntry1.OPERATION1, res);
+                        cv.put(InputData1.TaskEntry1.CATEGORY1, spinOut);
+                        db.insert(InputData1.TaskEntry1.TABLE1, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
+                }
+            } else if (currentAccount.equals(names[2])){
+                if (income) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_up_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal + i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper2.getWritableDatabase();
+                        cv.put(InputData2.TaskEntry2.VALUE2, i);
+                        cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
+                        cv.put(InputData2.TaskEntry2.DATE2, dateC());
+                        cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                        cv.put(InputData2.TaskEntry2.CATEGORY2, spinIn);
+                        db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
+                    }
+                } else if (outcome) {
+                    if (!inpValueET.getText().toString().isEmpty()) {
+                        res = R.drawable.ic_baseline_arrow_drop_down_24;
+                        int i = Integer.parseInt(inpValueET.getText().toString());
+                        int bal = Integer.parseInt(balance.getText().toString());
+                        int k = bal - i;
+                        balance.setText("" + k);
+                        ContentValues cv = new ContentValues();
+                        SQLiteDatabase db = dbHelper2.getWritableDatabase();
+                        cv.put(InputData2.TaskEntry2.VALUE2, i);
+                        cv.put(InputData2.TaskEntry2.TOTAL_VALUE2, bal);
+                        cv.put(InputData2.TaskEntry2.DATE2, dateC());
+                        cv.put(InputData2.TaskEntry2.OPERATION2, res);
+                        cv.put(InputData2.TaskEntry2.CATEGORY2, spinOut);
+                        db.insert(InputData2.TaskEntry2.TABLE2, null, cv);
+                        db.close();
+                        saveBalance();
+                        updateUI();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "no operation selected", Toast.LENGTH_SHORT).show();
                 }
             }
         });
         updateUI();
-        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
+        builder.setNegativeButton("cancel", (dialog, which) -> {
         });
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -1022,8 +1214,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
         if (currentAccount.equals(names[0])) {
-            indexes = new ArrayList<String>();
-            elements = new ArrayList<Element>();
+            indexes = new ArrayList<>();
+            elements = new ArrayList<>();
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             Cursor cursor = db.query(InputData.TaskEntry.TABLE, new String[]{InputData.TaskEntry._ID, InputData.TaskEntry.VALUE, InputData.TaskEntry.TOTAL_VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY}, null, null, null, null, null);
             while (cursor.moveToNext()) {
@@ -1051,8 +1243,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             cursor.close();
             db.close();
         } else if (currentAccount.equals(names[1])){
-            indexes = new ArrayList<String>();
-            elements = new ArrayList<Element>();
+            indexes = new ArrayList<>();
+            elements = new ArrayList<>();
             SQLiteDatabase db = dbHelper1.getReadableDatabase();
             Cursor cursor = db.query(InputData1.TaskEntry1.TABLE1, new String[]{InputData1.TaskEntry1._ID, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.TOTAL_VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1}, null, null, null, null, null);
             while (cursor.moveToNext()) {
@@ -1081,8 +1273,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             db.close();
 
         } else if (currentAccount.equals(names[2])){
-            indexes = new ArrayList<String>();
-            elements = new ArrayList<Element>();
+            indexes = new ArrayList<>();
+            elements = new ArrayList<>();
             SQLiteDatabase db = dbHelper2.getReadableDatabase();
             Cursor cursor = db.query(InputData2.TaskEntry2.TABLE2, new String[]{InputData2.TaskEntry2._ID, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.TOTAL_VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2}, null, null, null, null, null);
             while (cursor.moveToNext()) {

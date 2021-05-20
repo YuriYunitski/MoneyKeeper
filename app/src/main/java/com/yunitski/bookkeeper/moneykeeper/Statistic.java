@@ -3,11 +3,9 @@ package com.yunitski.bookkeeper.moneykeeper;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Statistic extends AppCompatActivity implements View.OnClickListener {
@@ -38,7 +36,12 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
     DBHelper dbHelper;
     DBHelper1 dbHelper1;
     DBHelper2 dbHelper2;
-    TextView tvChoosenDate, tvTotalIncome, tvTotalOutcomr, tvDelPercent, tvIncCateg, tvOutcCateg, tvOutCategSum, tvInCategSum;
+    TextView tvChoosenDate;
+    TextView tvTotalIncome;
+    TextView tvTotalOutcomr;
+    TextView tvDelPercent;
+    TextView tvOutCategSum;
+    TextView tvInCategSum;
     SharedPreferences sharedPreferences;
     SQLiteDatabase database;
     Spinner spinner;
@@ -51,7 +54,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         setContentView(R.layout.activity_statistic);
         toolbar = findViewById(R.id.toolBar4);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setTitle("Статистика");
         dbHelper = new DBHelper(this);
@@ -67,7 +70,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         chooseBtn = findViewById(R.id.button);
         chooseBtn.setOnClickListener(this);
         spinner = findViewById(R.id.time_spinner);
-        spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
+        spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
         spinner.setAdapter(spinnerAdapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -96,10 +99,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
     }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                this.finish();
-                break;
+        if (item.getItemId() == android.R.id.home) {
+            this.finish();
         }
         return true;
     }
@@ -108,15 +109,15 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         String curAc = sharedPreferences.getString(MainActivity.ACCOUNT_KEY, "Счёт 1");
         switch (curAc) {
             case "Счёт 1": {
-                getDayStatisticMethod(dbHelper, InputData.TaskEntry.VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY, InputData.TaskEntry.TABLE, MainActivity.ACCOUNT_ONE_FILE, MainActivity.CURRENCY_KEY);
+                getDayStatisticMethod(dbHelper, InputData.TaskEntry.VALUE, InputData.TaskEntry.DATE, InputData.TaskEntry.OPERATION, InputData.TaskEntry.CATEGORY, InputData.TaskEntry.TABLE, MainActivity.ACCOUNT_ONE_FILE);
                 break;
             }
             case "Счёт 2": {
-                getDayStatisticMethod(dbHelper1, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1, InputData1.TaskEntry1.TABLE1, MainActivity.ACCOUNT_TWO_FILE, MainActivity.CURRENCY_KEY);
+                getDayStatisticMethod(dbHelper1, InputData1.TaskEntry1.VALUE1, InputData1.TaskEntry1.DATE1, InputData1.TaskEntry1.OPERATION1, InputData1.TaskEntry1.CATEGORY1, InputData1.TaskEntry1.TABLE1, MainActivity.ACCOUNT_TWO_FILE);
                 break;
             }
             case "Счёт 3": {
-                getDayStatisticMethod(dbHelper2, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2, InputData2.TaskEntry2.TABLE2, MainActivity.ACCOUNT_THREE_FILE, MainActivity.CURRENCY_KEY);
+                getDayStatisticMethod(dbHelper2, InputData2.TaskEntry2.VALUE2, InputData2.TaskEntry2.DATE2, InputData2.TaskEntry2.OPERATION2, InputData2.TaskEntry2.CATEGORY2, InputData2.TaskEntry2.TABLE2, MainActivity.ACCOUNT_THREE_FILE);
                 break;
             }
         }
@@ -199,52 +200,43 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
         CalendarView calendar = view.findViewById(R.id.calendar);
         TextView tvChooseCalendar = view.findViewById(R.id.tv_calendar_choose);
         tvChooseCalendar.setText("" + dateC());
-        calendar.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                String date = dayOfMonth + "." + (month + 1) + "." + year;
-                tvChooseCalendar.setText(date);
-            }
+        calendar.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
+            String date = dayOfMonth + "." + (month + 1) + "." + year;
+            tvChooseCalendar.setText(date);
         });
 
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                tvChoosenDate.setText("" + tvChooseCalendar.getText().toString());
-                spinnerAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
-                spinner.setAdapter(spinnerAdapter);
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        switch (position) {
-                            case 0:
-                                getDayStatistic();
-                                break;
-                            case 1:
-                                getWeekStatistic();
-                                break;
-                            case 2:
-                                getMonthStatistic();
-                                break;
-                            case 3:
-                                getYearStatistic();
-                                break;
-                        }
+        builder.setPositiveButton("ok", (dialog, which) -> {
+            tvChoosenDate.setText("" + tvChooseCalendar.getText().toString());
+            spinnerAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.spinner_list_statistic, R.id.spin_text_stat, times);
+            spinner.setAdapter(spinnerAdapter);
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view12, int position, long id) {
+                    switch (position) {
+                        case 0:
+                            getDayStatistic();
+                            break;
+                        case 1:
+                            getWeekStatistic();
+                            break;
+                        case 2:
+                            getMonthStatistic();
+                            break;
+                        case 3:
+                            getYearStatistic();
+                            break;
                     }
+                }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-                    }
-                });
-            }
+                }
+            });
         });
 
-        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+        builder.setNegativeButton("cancel", (dialog, which) -> {
 
-            }
         });
 
         AlertDialog dialog = builder.create();
@@ -259,7 +251,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             s = "\n" + "\n";
         return s;
     }
-    void getDayStatisticMethod(SQLiteOpenHelper dbHelperM, String dbValue, String dbDate, String dbOperation, String dbCategory, String dbTable, String accountFile, String currencyKey) {
+    void getDayStatisticMethod(SQLiteOpenHelper dbHelperM, String dbValue, String dbDate, String dbOperation, String dbCategory, String dbTable, String accountFile) {
         String currentDate = tvChoosenDate.getText().toString();
         String[] currentDateSplit = currentDate.split("\\.");
         String currentDay = currentDateSplit[0];
@@ -317,6 +309,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             for (int i = 0; i < incomeValues.size(); i++) {
                 incSum += Integer.parseInt(incomeValues.get(i));
             }
+        }
+        if (outcomeValues.size() != 0){
             for (int i = 0; i < outcomeValues.size(); i++) {
                 outcSum += Integer.parseInt(outcomeValues.get(i));
             }
@@ -356,7 +350,7 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             outcCatVal.add(c);
         }
         sharedPreferences = getSharedPreferences(accountFile, Context.MODE_PRIVATE);
-        String cc = sharedPreferences.getString(currencyKey, "rub");
+        String cc = sharedPreferences.getString(MainActivity.CURRENCY_KEY, "rub");
         String c1 = "";
         switch (cc) {
             case "rub":
@@ -453,6 +447,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             for (int i = 0; i < incomeValues.size(); i++) {
                 incSum += Integer.parseInt(incomeValues.get(i));
             }
+        }
+        if (outcomeValues.size() != 0){
             for (int i = 0; i < outcomeValues.size(); i++) {
                 outcSum += Integer.parseInt(outcomeValues.get(i));
             }
@@ -568,6 +564,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             for (int i = 0; i < incomeValues.size(); i++) {
                 incSum += Integer.parseInt(incomeValues.get(i));
             }
+        }
+        if (outcomeValues.size() != 0){
             for (int i = 0; i < outcomeValues.size(); i++) {
                 outcSum += Integer.parseInt(outcomeValues.get(i));
             }
@@ -677,6 +675,8 @@ public class Statistic extends AppCompatActivity implements View.OnClickListener
             for (int i = 0; i < incomeValues.size(); i++) {
                 incSum += Integer.parseInt(incomeValues.get(i));
             }
+        }
+        if (outcomeValues.size() != 0){
             for (int i = 0; i < outcomeValues.size(); i++) {
                 outcSum += Integer.parseInt(outcomeValues.get(i));
             }
