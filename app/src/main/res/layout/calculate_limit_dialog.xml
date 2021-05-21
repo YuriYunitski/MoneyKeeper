@@ -88,6 +88,7 @@
         android:ems="10"
         android:inputType="number"
         android:backgroundTint="@color/white"
+        android:maxLength="9"
         android:textColor="@color/white"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="@+id/radioGroup2"

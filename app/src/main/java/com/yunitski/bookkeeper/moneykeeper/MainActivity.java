@@ -8,10 +8,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -31,14 +29,11 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -789,42 +784,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             builder.setView(view);
             changeBalanceEditText = view.findViewById(R.id.et_bal_change);
             changeBalanceEditText.setText("" + balance.getText().toString());
-            builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            builder.setPositiveButton("ok", (dialog, which) -> {
 
-                    sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
-                    currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
+                sharedPreferences = getSharedPreferences(ACCOUNT_FILE, Context.MODE_PRIVATE);
+                currentAccount = sharedPreferences.getString(ACCOUNT_KEY, names[0]);
 
-                    if (currentAccount.equals(names[0])) {
-                        String fileNameB = "balanceSP";
-                        sharedPreferences = getSharedPreferences(fileNameB, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b", changeBalanceEditText.getText().toString());
-                        editor.apply();
-                    } else if (currentAccount.equals(names[1])){
-                        String fileNameB1 = "balanceSP1";
-                        sharedPreferences = getSharedPreferences(fileNameB1, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b1", changeBalanceEditText.getText().toString());
-                        editor.apply();
+                if (currentAccount.equals(names[0])) {
+                    String fileNameB = "balanceSP";
+                    sharedPreferences = getSharedPreferences(fileNameB, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("b", changeBalanceEditText.getText().toString());
+                    editor.apply();
+                } else if (currentAccount.equals(names[1])){
+                    String fileNameB1 = "balanceSP1";
+                    sharedPreferences = getSharedPreferences(fileNameB1, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("b1", changeBalanceEditText.getText().toString());
+                    editor.apply();
 
-                    } else if (currentAccount.equals(names[2])){
+                } else if (currentAccount.equals(names[2])){
 
-                        String fileNameB2 = "balanceSP2";
-                        sharedPreferences = getSharedPreferences(fileNameB2, Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("b2", changeBalanceEditText.getText().toString());
-                        editor.apply();
-                    }
-                    loadBalance();
+                    String fileNameB2 = "balanceSP2";
+                    sharedPreferences = getSharedPreferences(fileNameB2, Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("b2", changeBalanceEditText.getText().toString());
+                    editor.apply();
                 }
+                loadBalance();
             });
-            builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            builder.setNegativeButton("cancel", (dialog, which) -> {
 
-                }
             });
             AlertDialog dialog = builder.create();
             dialog.show();
